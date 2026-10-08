@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DefaultAssociations>
+  <Association Identifier=".htm" ProgId="FirefoxHTML-308046B0AF4A39CB" ApplicationName="Firefox" />
+  <Association Identifier=".html" ProgId="FirefoxHTML-308046B0AF4A39CB" ApplicationName="Firefox" />
+  <Association Identifier="http" ProgId="FirefoxURL-308046B0AF4A39CB" ApplicationName="Firefox" />
+  <Association Identifier="https" ProgId="FirefoxURL-308046B0AF4A39CB" ApplicationName="Firefox" />
+  <Association Identifier=".pdf" ProgId="FirefoxPDF-308046B0AF4A39CB" ApplicationName="Firefox" />
+  <Association Identifier=".7z" ProgId="7-Zip.7z" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".zip" ProgId="7-Zip.zip" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".rar" ProgId="7-Zip.rar" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".001" ProgId="7-Zip.001" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".cab" ProgId="7-Zip.cab" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".iso" ProgId="7-Zip.iso" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".xz" ProgId="7-Zip.xz" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".txz" ProgId="7-Zip.txz" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".lzma" ProgId="7-Zip.lzma" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".tar" ProgId="7-Zip.tar" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".cpio" ProgId="7-Zip.cpio" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".bz2" ProgId="7-Zip.bz2" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".bzip2" ProgId="7-Zip.bzip2" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".tbz2" ProgId="7-Zip.tbz2" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".tbz" ProgId="7-Zip.tbz" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".gz" ProgId="7-Zip.gz" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".gzip" ProgId="7-Zip.gzip" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".tgz" ProgId="7-Zip.tgz" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".tpz" ProgId="7-Zip.tpz" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".zst" ProgId="7-Zip.zst" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".tzst" ProgId="7-Zip.tzst" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".z" ProgId="7-Zip.z" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".taz" ProgId="7-Zip.taz" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".lzh" ProgId="7-Zip.lzh" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".lha" ProgId="7-Zip.lha" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".rpm" ProgId="7-Zip.rpm" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".deb" ProgId="7-Zip.deb" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".arj" ProgId="7-Zip.arj" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".vhd" ProgId="7-Zip.vhd" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".vhdx" ProgId="7-Zip.vhdx" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".wim" ProgId="7-Zip.wim" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".swm" ProgId="7-Zip.swm" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".esd" ProgId="7-Zip.esd" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".fat" ProgId="7-Zip.fat" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".ntfs" ProgId="7-Zip.ntfs" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".dmg" ProgId="7-Zip.dmg" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".hfs" ProgId="7-Zip.hfs" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".xar" ProgId="7-Zip.xar" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".squashfs" ProgId="7-Zip.squashfs" ApplicationName="7-Zip File Manager" />
+  <Association Identifier=".apfs" ProgId="7-Zip.apfs" ApplicationName="7-Zip File Manager" />
+</DefaultAssociations>
