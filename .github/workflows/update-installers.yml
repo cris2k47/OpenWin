@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       rebuild:
-        description: Rebuild the release even if nothing changed
+        description: Publish a new release even if nothing changed
         type: boolean
         default: false
 
@@ -75,9 +75,9 @@ jobs:
           git push
 
   release:
-    # Publish autounattend.iso and OpenWin.zip whenever autounattend.xml or
-    # $OEM$ on the branch differ from the "latest" release, whether they changed
-    # through an update above or any other push.
+    # Publish a new release with autounattend.iso and OpenWin.zip whenever
+    # autounattend.xml or $OEM$ on the branch differ from the newest release,
+    # whether they changed through an update above or any other push.
     needs: [brave, seven-zip]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
@@ -85,7 +85,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Check whether the release is up to date
+      - name: Check whether the newest release is up to date
         id: check
         env:
           REBUILD: ${{ inputs.rebuild }}
@@ -97,13 +97,17 @@ jobs:
               --jq '[.tree[] | select(.path == "autounattend.xml" or .path == "$OEM$") | .sha] | join(" ")'
           }
           sha=$(gh api "repos/$GH_REPO/git/ref/heads/$GITHUB_REF_NAME" --jq .object.sha)
-          released=$(gh api "repos/$GH_REPO/git/ref/tags/latest" --jq .object.sha 2>/dev/null) || released=
+          # The newest release's tag points at the commit it was built from.
+          released=
+          if tag=$(gh api "repos/$GH_REPO/releases/latest" --jq .tag_name 2>/dev/null); then
+            released=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha 2>/dev/null) || released=
+          fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           if [ "$REBUILD" = true ] || [ -z "$released" ] ||
              [ "$(contents "$sha")" != "$(contents "$released")" ]; then
             echo "stale=true" >> "$GITHUB_OUTPUT"
           else
-            echo "The latest release is up to date."
+            echo "The newest release, $tag, is up to date."
           fi
 
       - uses: actions/checkout@v5
@@ -127,7 +131,7 @@ jobs:
           genisoimage -quiet -o dist/autounattend.iso -V OPENWIN -udf -J -joliet-long -r -D staging
           (cd staging && zip -q -r -X ../dist/OpenWin.zip autounattend.xml '$OEM$')
 
-      - name: Publish the latest release
+      - name: Publish a new release
         if: steps.check.outputs.stale == 'true'
         env:
           SHA: ${{ steps.check.outputs.sha }}
@@ -135,6 +139,7 @@ jobs:
           files='$OEM$/$$/Setup/Files'
           brave=$(jq -r .version "$files/Brave.json")
           sevenzip=$(ls "$files" | sed -n 's/^7z\([0-9]*\)\([0-9][0-9]\)-x64\.exe$/\1.\2/p')
+          tag=$(date -u +%Y.%m.%d-%H%M)
           sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@SEVENZIP@|$sevenzip|" \
             -e "s|@REPO@|$GH_REPO|" > notes.md <<'EOF'
           Built from @SHA@ with Brave @BRAVE@ and 7-Zip @SEVENZIP@.
@@ -144,14 +149,7 @@ jobs:
 
           See the [README](https://github.com/@REPO@#readme) for step-by-step instructions.
           EOF
-          if gh release view latest > /dev/null 2>&1; then
-            gh release upload latest dist/autounattend.iso dist/OpenWin.zip --clobber
-            # --draft=false republishes the release if deleting its tag turned it into
-            # a draft; publishing recreates the tag at --target.
-            gh release edit latest --draft=false --target "$SHA" --notes-file notes.md
-            # Move the tag last, so a failed upload is retried on the next run.
-            gh api -X PATCH "repos/$GH_REPO/git/refs/tags/latest" -f sha="$SHA" -F force=true > /dev/null
-          else
-            gh release create latest dist/autounattend.iso dist/OpenWin.zip --title OpenWin \
-              --notes-file notes.md --target "$SHA"
-          fi
+          # gh uploads the files to a draft and publishes it only once they're all
+          # there, so the download links never point at a release without them.
+          gh release create "$tag" dist/autounattend.iso dist/OpenWin.zip --latest --target "$SHA" \
+            --title "OpenWin ${tag%-*} · Brave $brave · 7-Zip $sevenzip" --notes-file notes.md

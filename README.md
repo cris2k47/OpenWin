@@ -112,8 +112,8 @@ activates on its own once it's online. Otherwise, enter your own Pro key in
 Every 5 minutes, a [GitHub Actions workflow](.github/workflows/update-installers.yml)
 checks for new releases of Brave and 7-Zip. When one is out, it verifies the
 official installer against the checksums the publisher provides (signed by
-Brave, for Brave), commits the update to this repository and rebuilds the
-downloads above.
+Brave, for Brave), commits the update to this repository and publishes a new
+release with the downloads above.
 
 Brave's offline installer is larger than GitHub's 100 MB file limit, so this
 repository keeps only its version and checksum, in `Brave.json`. The downloads
