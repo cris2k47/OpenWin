@@ -1,8 +1,9 @@
 name: Update installers
 
+# An external scheduler (cron-job.org) starts this workflow every 5 minutes
+# through the workflow_dispatch API, because GitHub's schedule trigger never
+# fired for this repository.
 on:
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       rebuild:
