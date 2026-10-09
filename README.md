@@ -17,15 +17,21 @@ installer from Microsoft, either on a USB drive or in a virtual machine.
 | [**autounattend.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend.iso) | A virtual machine |
 
 Both contain the same two things, `autounattend.xml` and the `$OEM$` folder,
-and always ship the latest Firefox and 7-Zip (see [Always up to date](#always-up-to-date)).
+and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-to-date)).
 
 ## What you get
 
 **Open-source apps by default**
-- **Firefox** is the default browser and PDF viewer, pinned to the taskbar. It
-  includes every language pack and follows the Windows display language. It
-  skips the welcome page and terms-of-use prompt, and comes without telemetry,
-  sponsored shortcuts or default bookmarks.
+- **Brave** is the default browser and PDF viewer, pinned to the taskbar, and
+  follows the Windows display language. Each user starts with these settings,
+  which they can change later in Brave's settings:
+  - No Brave VPN, Leo AI, Wallet or Rewards buttons, and no Leo AI, Brave Talk
+    or Wallet in the sidebar.
+  - No Leo suggestions in the address bar or Leo items in the right-click menu,
+    and no Brave Commands suggestions.
+  - A New Tab page with a clock, without sponsored images, Brave News or the
+    Rewards, Talk and VPN widgets.
+  - Downloads go straight to the Downloads folder without asking where.
 - **7-Zip** opens archives and disk images: zip, 7z, rar, tar, gz, xz, zst,
   iso, cab, wim, vhd(x), dmg and more.
 
@@ -36,9 +42,9 @@ and always ship the latest Firefox and 7-Zip (see [Always up to date](#always-up
   Power Automate, Quick Assist, Solitaire Collection, Sound Recorder, Sticky
   Notes, Teams, Terminal, To Do, Weather, Widgets and Xbox.
 - OneDrive isn't set up for new users.
-- The Start menu only has Firefox, Microsoft Store, Settings, Photos, Paint,
+- The Start menu only has Brave, Microsoft Store, Settings, Photos, Paint,
   Calculator, Notepad, Snipping Tool and File Explorer. The taskbar has File
-  Explorer and Firefox.
+  Explorer and Brave.
 - No web suggestions in Search.
 
 **Sensible defaults**
@@ -104,10 +110,14 @@ activates on its own once it's online. Otherwise, enter your own Pro key in
 ## Always up to date
 
 Every 5 minutes, a [GitHub Actions workflow](.github/workflows/update-installers.yml)
-checks for new releases of Firefox and 7-Zip. When one is out, it downloads the
-official installer (and Firefox's language packs), verifies it against the
-checksums the publisher provides, commits it to this repository and rebuilds
-the downloads above.
+checks for new releases of Brave and 7-Zip. When one is out, it verifies the
+official installer against the checksums the publisher provides (signed by
+Brave, for Brave), commits the update to this repository and rebuilds the
+downloads above.
+
+Brave's offline installer is larger than GitHub's 100 MB file limit, so this
+repository keeps only its version and checksum, in `Brave.json`. The downloads
+above include the installer itself.
 
 ## Repository layout
 
@@ -115,7 +125,7 @@ the downloads above.
 autounattend.xml          Answer file for Windows Setup
 $OEM$/$$/                 Copied to C:\Windows
   Setup/Scripts/          Scripts that run during setup
-  Setup/Files/            Firefox and 7-Zip installers, Firefox settings and registry tweaks
+  Setup/Files/            7-Zip installer, Brave.json, Brave settings and registry tweaks
   System32/               Default apps
 $OEM$/$1/                 Copied to C:\ (Start menu and taskbar layout)
 .github/                  The workflow that keeps everything up to date
@@ -123,8 +133,8 @@ $OEM$/$1/                 Copied to C:\ (Start menu and taskbar layout)
 
 ## Credits
 
-- [Firefox](https://www.mozilla.org/firefox/) by Mozilla, under the Mozilla Public License 2.0.
+- [Brave](https://brave.com/) by Brave Software, under the Mozilla Public License 2.0.
 - [7-Zip](https://www.7-zip.org/) by Igor Pavlov, under the GNU LGPL with the unRAR restriction.
 
 Windows is a trademark of Microsoft. OpenWin isn't affiliated with Microsoft,
-Mozilla or 7-Zip.
+Brave Software or 7-Zip.

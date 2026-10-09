@@ -9,7 +9,7 @@
     <defaultlayout:TaskbarLayout>
       <taskbar:TaskbarPinList>
         <taskbar:DesktopApp DesktopApplicationID="Microsoft.Windows.Explorer" PinGeneration="1"/>
-        <taskbar:DesktopApp DesktopApplicationID="308046B0AF4A39CB" PinGeneration="1"/>
+        <taskbar:DesktopApp DesktopApplicationID="Brave" PinGeneration="1"/>
       </taskbar:TaskbarPinList>
     </defaultlayout:TaskbarLayout>
   </CustomTaskbarLayoutCollection>

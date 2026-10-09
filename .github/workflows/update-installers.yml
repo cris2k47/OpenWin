@@ -18,7 +18,7 @@ concurrency:
   group: update-installers
 
 jobs:
-  firefox:
+  brave:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -27,32 +27,34 @@ jobs:
           # run that waited for a previous update doesn't redo it.
           ref: ${{ github.ref }}
 
-      - name: Download the latest Firefox release
-        id: firefox
-        run: python3 .github/scripts/update_firefox.py
+      - name: Pin the latest Brave release
+        id: brave
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/update_brave.py
 
       - name: Commit and push
-        if: steps.firefox.outputs.updated == 'true'
+        if: steps.brave.outputs.updated == 'true'
         env:
-          VERSION: ${{ steps.firefox.outputs.version }}
+          VERSION: ${{ steps.brave.outputs.version }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Update Firefox to $VERSION"
+          git commit -m "Update Brave to $VERSION"
           git push
 
   seven-zip:
-    # Run after the Firefox job, even if it failed, so the two never push at
-    # the same time.
-    needs: firefox
+    # Run after the Brave job, even if it failed, so the two never push at the
+    # same time.
+    needs: brave
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
         with:
-          # Check out the branch tip so a Firefox update pushed by the previous
-          # job is included.
+          # Check out the branch tip so a Brave update pushed by the previous job
+          # is included.
           ref: ${{ github.ref }}
 
       - name: Download the latest 7-Zip release
@@ -76,7 +78,7 @@ jobs:
     # Publish autounattend.iso and OpenWin.zip whenever autounattend.xml or
     # $OEM$ on the branch differ from the "latest" release, whether they changed
     # through an update above or any other push.
-    needs: [firefox, seven-zip]
+    needs: [brave, seven-zip]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     env:
@@ -116,6 +118,10 @@ jobs:
           sudo apt-get install -y -qq genisoimage
           mkdir staging dist
           cp -r autounattend.xml '$OEM$' staging/
+          # Brave's installer is too big for the repository, which pins it in
+          # Brave.json instead. Swap the pin for the verified installer.
+          python3 .github/scripts/update_brave.py --download 'staging/$OEM$/$$/Setup/Files'
+          rm 'staging/$OEM$/$$/Setup/Files/Brave.json'
           # UDF for Windows Setup, plus Joliet and Rock Ridge for other systems.
           # -D keeps the deep $OEM$\$1\Users\Default\... folders where they are.
           genisoimage -quiet -o dist/autounattend.iso -V OPENWIN -udf -J -joliet-long -r -D staging
@@ -127,11 +133,11 @@ jobs:
           SHA: ${{ steps.check.outputs.sha }}
         run: |
           files='$OEM$/$$/Setup/Files'
-          firefox=$(ls "$files" | sed -n 's/^Firefox Setup \(.*\)\.exe$/\1/p')
+          brave=$(jq -r .version "$files/Brave.json")
           sevenzip=$(ls "$files" | sed -n 's/^7z\([0-9]*\)\([0-9][0-9]\)-x64\.exe$/\1.\2/p')
-          sed -e "s|@SHA@|$SHA|" -e "s|@FIREFOX@|$firefox|" -e "s|@SEVENZIP@|$sevenzip|" \
+          sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@SEVENZIP@|$sevenzip|" \
             -e "s|@REPO@|$GH_REPO|" > notes.md <<'EOF'
-          Built from @SHA@ with Firefox @FIREFOX@ (with every language pack) and 7-Zip @SEVENZIP@.
+          Built from @SHA@ with Brave @BRAVE@ and 7-Zip @SEVENZIP@.
 
           - **autounattend.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
           - **OpenWin.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.

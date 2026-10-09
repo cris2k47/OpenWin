@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DefaultAssociations>
-  <Association Identifier=".htm" ProgId="FirefoxHTML-308046B0AF4A39CB" ApplicationName="Firefox" />
-  <Association Identifier=".html" ProgId="FirefoxHTML-308046B0AF4A39CB" ApplicationName="Firefox" />
-  <Association Identifier="http" ProgId="FirefoxURL-308046B0AF4A39CB" ApplicationName="Firefox" />
-  <Association Identifier="https" ProgId="FirefoxURL-308046B0AF4A39CB" ApplicationName="Firefox" />
-  <Association Identifier=".pdf" ProgId="FirefoxPDF-308046B0AF4A39CB" ApplicationName="Firefox" />
+  <Association Identifier=".htm" ProgId="BraveHTML" ApplicationName="Brave" />
+  <Association Identifier=".html" ProgId="BraveHTML" ApplicationName="Brave" />
+  <Association Identifier="http" ProgId="BraveHTML" ApplicationName="Brave" />
+  <Association Identifier="https" ProgId="BraveHTML" ApplicationName="Brave" />
+  <Association Identifier=".pdf" ProgId="BravePDF" ApplicationName="Brave" />
   <Association Identifier=".7z" ProgId="7-Zip.7z" ApplicationName="7-Zip File Manager" />
   <Association Identifier=".zip" ProgId="7-Zip.zip" ApplicationName="7-Zip File Manager" />
   <Association Identifier=".rar" ProgId="7-Zip.rar" ApplicationName="7-Zip File Manager" />
