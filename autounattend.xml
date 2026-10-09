@@ -28,7 +28,7 @@
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>4</Order>
-                    <Path>conhost --headless "%SYSTEMROOT%\Setup\Scripts\InstallBrave.cmd"</Path>
+                    <Path>"%SYSTEMROOT%\Setup\Files\BraveBrowserStandaloneSetup.exe" /silent /install</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>5</Order>

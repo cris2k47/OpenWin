@@ -125,9 +125,9 @@ above include the installer itself.
 autounattend.xml          Answer file for Windows Setup
 $OEM$/$$/                 Copied to C:\Windows
   Setup/Scripts/          Scripts that run during setup
-  Setup/Files/            7-Zip installer, Brave.json, Brave settings and registry tweaks
+  Setup/Files/            7-Zip installer, Brave.json and registry tweaks
   System32/               Default apps
-$OEM$/$1/                 Copied to C:\ (Start menu and taskbar layout)
+$OEM$/$1/                 Copied to C:\ (Brave settings, Start menu and taskbar layout)
 .github/                  The workflow that keeps everything up to date
 ```
 
