@@ -103,6 +103,8 @@ jobs:
             released=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha 2>/dev/null) || released=
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "previous=$released" >> "$GITHUB_OUTPUT"
+          echo "previous_tag=$tag" >> "$GITHUB_OUTPUT"
           if [ "$REBUILD" = true ] || [ -z "$released" ] ||
              [ "$(contents "$sha")" != "$(contents "$released")" ]; then
             echo "stale=true" >> "$GITHUB_OUTPUT"
@@ -135,13 +137,29 @@ jobs:
         if: steps.check.outputs.stale == 'true'
         env:
           SHA: ${{ steps.check.outputs.sha }}
+          PREVIOUS: ${{ steps.check.outputs.previous }}
+          PREVIOUS_TAG: ${{ steps.check.outputs.previous_tag }}
         run: |
           files='$OEM$/$$/Setup/Files'
           brave=$(jq -r .version "$files/Brave.json")
           sevenzip=$(ls "$files" | sed -n 's/^7z\([0-9]*\)\([0-9][0-9]\)-x64\.exe$/\1.\2/p')
           tag=$(date -u +%Y.%m.%d-%H%M)
-          sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@SEVENZIP@|$sevenzip|" \
-            -e "s|@REPO@|$GH_REPO|" > notes.md <<'EOF'
+          # The first line of every commit since the previous release.
+          changes=
+          if [ -n "$PREVIOUS" ]; then
+            changes=$(gh api "repos/$GH_REPO/compare/$PREVIOUS...$SHA" \
+              --jq '.commits[] | "- " + (.commit.message | split("\n")[0])')
+          fi
+          {
+            if [ -n "$changes" ]; then
+              printf '## Changes\n\n%s\n\n' "$changes"
+              printf '[All changes since %s](https://github.com/%s/compare/%s...%s)\n\n' \
+                "$PREVIOUS_TAG" "$GH_REPO" "$PREVIOUS_TAG" "$tag"
+            fi
+            sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@SEVENZIP@|$sevenzip|" \
+              -e "s|@REPO@|$GH_REPO|" <<'EOF'
+          ## Downloads
+
           Built from @SHA@ with Brave @BRAVE@ and 7-Zip @SEVENZIP@.
 
           - **autounattend.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
@@ -149,6 +167,7 @@ jobs:
 
           See the [README](https://github.com/@REPO@#readme) for step-by-step instructions.
           EOF
+          } > notes.md
           # gh uploads the files to a draft and publishes it only once they're all
           # there, so the download links never point at a release without them.
           gh release create "$tag" dist/autounattend.iso dist/OpenWin.zip --latest --target "$SHA" \
