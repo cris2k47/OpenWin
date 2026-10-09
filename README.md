@@ -34,6 +34,9 @@ and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-t
   - Downloads go straight to the Downloads folder without asking where.
   - No welcome page the first time Brave opens, and Brave's anonymous usage
     statistics (P3A) are off.
+  - Widevine is on, so streaming services that need DRM, such as Netflix and
+    Spotify, play without asking first. Brave downloads it the first time it
+    opens.
 - **7-Zip** opens archives and disk images: zip, 7z, rar, tar, gz, xz, zst,
   iso, cab, wim, vhd(x), dmg and more.
 

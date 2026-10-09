@@ -4,6 +4,7 @@
       "p3a": {
          "enabled": false,
          "notice_acknowledged": true
-      }
+      },
+      "widevine_opted_in": true
    }
 }
