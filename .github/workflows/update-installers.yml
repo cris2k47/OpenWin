@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+    inputs:
+      rebuild:
+        description: Rebuild the release even if nothing changed
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -79,6 +84,8 @@ jobs:
     steps:
       - name: Check whether the release is up to date
         id: check
+        env:
+          REBUILD: ${{ inputs.rebuild }}
         run: |
           # The Git object IDs of autounattend.xml and $OEM$ change exactly when
           # their contents do.
@@ -89,7 +96,7 @@ jobs:
           sha=$(gh api "repos/$GH_REPO/git/ref/heads/$GITHUB_REF_NAME" --jq .object.sha)
           released=$(gh api "repos/$GH_REPO/git/ref/tags/latest" --jq .object.sha 2>/dev/null) || released=
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] || [ -z "$released" ] ||
+          if [ "$REBUILD" = true ] || [ -z "$released" ] ||
              [ "$(contents "$sha")" != "$(contents "$released")" ]; then
             echo "stale=true" >> "$GITHUB_OUTPUT"
           else
