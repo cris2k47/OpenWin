@@ -16,11 +16,11 @@
             <RunSynchronous>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>1</Order>
-                    <Path>conhost --headless "%SYSTEMROOT%\Setup\Scripts\RemoveApps.cmd"</Path>
+                    <Path>powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "%SYSTEMROOT%\Setup\Scripts\RemoveApps.ps1"</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>2</Order>
-                    <Path>conhost --headless "%SYSTEMROOT%\Setup\Scripts\RemoveEdge.cmd"</Path>
+                    <Path>powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File "%SYSTEMROOT%\Setup\Scripts\RemoveEdge.ps1"</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>3</Order>
