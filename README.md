@@ -32,6 +32,8 @@ and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-t
   - A New Tab page with a clock, without sponsored images, Brave News or the
     Rewards, Talk and VPN widgets.
   - Downloads go straight to the Downloads folder without asking where.
+  - No welcome page the first time Brave opens, and Brave's anonymous usage
+    statistics (P3A) are off.
 - **7-Zip** opens archives and disk images: zip, 7z, rar, tar, gz, xz, zst,
   iso, cab, wim, vhd(x), dmg and more.
 
