@@ -91,9 +91,8 @@ Tips for some hypervisors:
   ignored. Then add the second drive in *Settings → Storage*.
 - **VMware Workstation**: choose *I will install the operating system later*
   to avoid Easy Install, then add the second CD/DVD drive.
-- **Hyper-V**: use a Generation 2 machine. The wizard gives it 1 virtual
-  processor, so set *Settings → Processor* to 2 or more, and add the second DVD
-  drive to its SCSI controller.
+- **Hyper-V**: use a Generation 2 machine and add the second DVD drive to its
+  SCSI controller.
 - **virt-manager / QEMU**: add a second CDROM device.
 
 ## What Setup still asks you
