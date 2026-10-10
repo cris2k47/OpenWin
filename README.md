@@ -137,6 +137,11 @@ $OEM$/$1/                 Copied to C:\ (Brave settings, Start menu and taskbar 
 docs/                     Screenshots for this README
 ```
 
+## License
+
+OpenWin is under the [MIT License](LICENSE). Brave and 7-Zip, which it
+installs, keep their own licenses.
+
 ## Credits
 
 - [Brave](https://brave.com/) by Brave Software, under the Mozilla Public License 2.0.
