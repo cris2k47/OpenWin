@@ -134,7 +134,7 @@ $OEM$/$$/                 Copied to C:\Windows
   System32/               Default apps
 $OEM$/$1/                 Copied to C:\ (Brave settings, Start menu and taskbar layout)
 .github/                  The workflow that keeps everything up to date
-docs/                     Screenshots for this README
+docs/                     Screenshots for this README and the repository's social preview
 ```
 
 ## License
