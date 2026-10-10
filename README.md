@@ -21,6 +21,10 @@ and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-t
 
 ## What you get
 
+| The Start menu and taskbar | Brave's New Tab page |
+| --- | --- |
+| ![The Start menu and taskbar after installing OpenWin](docs/start-menu.png) | ![Brave's New Tab page after installing OpenWin](docs/brave.jpg) |
+
 **Open-source apps by default**
 - **Brave** is the default browser and PDF viewer, pinned to the taskbar, and
   follows the Windows display language. Each user starts with these settings,
@@ -131,6 +135,7 @@ $OEM$/$$/                 Copied to C:\Windows
   System32/               Default apps
 $OEM$/$1/                 Copied to C:\ (Brave settings, Start menu and taskbar layout)
 .github/                  The workflow that keeps everything up to date
+docs/                     Screenshots for this README
 ```
 
 ## Credits
