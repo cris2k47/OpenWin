@@ -1,9 +1,8 @@
-# OpenWin
+![OpenWin: What if Windows were open source?](docs/social-preview.png)
 
-**What if Windows were open source?** OpenWin installs Windows 11 the way an
-open-source operating system would ship: open-source apps out of the box,
-without Edge and most of the preinstalled apps, and with a local account instead
-of a Microsoft account.
+OpenWin installs Windows 11 the way an open-source operating system would ship:
+open-source apps out of the box, without Edge and most of the preinstalled apps,
+and with a local account instead of a Microsoft account.
 
 It's an answer file for Windows Setup (`autounattend.xml`) plus an `$OEM$`
 folder with everything it installs. You add them to the official Windows 11
@@ -134,7 +133,7 @@ $OEM$/$$/                 Copied to C:\Windows
   System32/               Default apps
 $OEM$/$1/                 Copied to C:\ (Brave settings, Start menu and taskbar layout)
 .github/                  The workflow that keeps everything up to date
-docs/                     Screenshots for this README and the repository's social preview
+docs/                     Screenshots and the banner for this README
 ```
 
 ## License
