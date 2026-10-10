@@ -2,8 +2,7 @@
    "brave": {
       "enable_search_suggestions_by_default": true,
       "p3a": {
-         "enabled": false,
-         "notice_acknowledged": true
+         "enabled": false
       }
    }
 }
