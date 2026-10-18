@@ -137,8 +137,8 @@ limit, so this repository keeps only their versions and checksums, in
 themselves.
 
 Changes are tested on the [dev](https://github.com/cris2k47/OpenWin/tree/dev)
-branch first. Each change there to an edition's files publishes a pre-release,
-which the download links above never point to.
+branch first. Each push there builds both editions and attaches them to its
+workflow run in GitHub Actions, without publishing a release.
 
 ## Repository layout
 

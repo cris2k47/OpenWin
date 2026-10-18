@@ -3,7 +3,8 @@ name: Update installers
 # An external scheduler (cron-job.org) starts this workflow on main every 5
 # minutes through the workflow_dispatch API, because GitHub's schedule trigger
 # never fired for this repository. Every push to dev starts it on dev, which
-# publishes a test pre-release.
+# builds both editions to test and attaches them to the run, without publishing
+# a release.
 on:
   workflow_dispatch:
     inputs:
@@ -118,11 +119,11 @@ jobs:
           git push
 
   release:
-    # Publish a new release with both editions whenever $OEM$, Brave or Chrome
-    # on the branch differ from the branch's newest release,
-    # whether they changed through an update above or any other push. main
-    # publishes releases, and other branches publish pre-releases whose tags
-    # start with the branch name, such as dev-2026.10.17-1840.
+    # On main, publish a new release with both editions whenever $OEM$, Brave or
+    # Chrome differ from the latest release, whether they changed through an
+    # update above or any other push. On other branches, such as dev, build both
+    # editions on every run and attach them to the run to test, without
+    # publishing a release.
     needs: [brave, chrome, seven-zip]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
@@ -130,42 +131,36 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Check whether the branch's newest release is up to date
+      - name: Check whether the latest release is up to date
         id: check
         env:
           REBUILD: ${{ inputs.rebuild }}
         run: |
+          sha=$(gh api "repos/$GH_REPO/git/ref/heads/$GITHUB_REF_NAME" --jq .object.sha)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_NAME" != main ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           # The Git object IDs of these change exactly when their contents do.
           contents() {
             gh api "repos/$GH_REPO/git/trees/$1" --jq '[.tree[]
               | select(.path == "$OEM$" or .path == "Brave" or .path == "Chrome")
               | .sha] | join(" ")'
           }
-          sha=$(gh api "repos/$GH_REPO/git/ref/heads/$GITHUB_REF_NAME" --jq .object.sha)
           # Only a 404 means there's no release yet. Any other error stops here,
           # rather than counting as a change and publishing a duplicate.
-          if ! latest=$(gh api "repos/$GH_REPO/releases/latest" --jq .tag_name 2> "$RUNNER_TEMP/error"); then
+          if ! tag=$(gh api "repos/$GH_REPO/releases/latest" --jq .tag_name 2> "$RUNNER_TEMP/error"); then
             grep -q 'HTTP 404' "$RUNNER_TEMP/error" || { cat "$RUNNER_TEMP/error" >&2; exit 1; }
-            latest=
+            tag=
           fi
-          if [ "$GITHUB_REF_NAME" = main ]; then
-            tag=$latest
-          else
-            # Tags such as dev-2026.10.17-1840 sort by date.
-            tags=$(gh api --paginate "repos/$GH_REPO/releases?per_page=100" --jq ".[]
-              | select((.draft | not) and (.tag_name | startswith(\"$GITHUB_REF_NAME-\"))) | .tag_name")
-            tag=$(printf '%s\n' "$tags" | sort | tail -n 1)
-          fi
-          # A branch's first pre-release lists its changes since the latest release.
-          previous_tag=${tag:-$latest}
           previous=
-          if [ -n "$previous_tag" ]; then
+          if [ -n "$tag" ]; then
             # A release's tag points at the commit it was built from.
-            previous=$(gh api "repos/$GH_REPO/commits/$previous_tag" --jq .sha)
+            previous=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha)
           fi
-          echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "previous=$previous" >> "$GITHUB_OUTPUT"
-          echo "previous_tag=$previous_tag" >> "$GITHUB_OUTPUT"
+          echo "previous_tag=$tag" >> "$GITHUB_OUTPUT"
           stale=
           if [ "$REBUILD" = true ] || [ -z "$tag" ]; then
             stale=true
@@ -175,18 +170,18 @@ jobs:
             if [ "$now" != "$released" ]; then stale=true; fi
           fi
           if [ "$stale" = true ]; then
-            echo "stale=true" >> "$GITHUB_OUTPUT"
+            echo "build=true" >> "$GITHUB_OUTPUT"
           else
-            echo "The newest release, $tag, is up to date."
+            echo "The latest release, $tag, is up to date."
           fi
 
       - uses: actions/checkout@v5
-        if: steps.check.outputs.stale == 'true'
+        if: steps.check.outputs.build == 'true'
         with:
           ref: ${{ steps.check.outputs.sha }}
 
       - name: Build both editions
-        if: steps.check.outputs.stale == 'true'
+        if: steps.check.outputs.build == 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq genisoimage
@@ -212,8 +207,42 @@ jobs:
           build Brave
           build Chrome
 
+      # On branches other than main, attach the files to the run, each as it is
+      # rather than zipped, to download and test from the run's page.
+      - name: Attach autounattend-Brave.iso to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/autounattend-Brave.iso
+          archive: false
+          retention-days: 30
+
+      - name: Attach autounattend-Chrome.iso to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/autounattend-Chrome.iso
+          archive: false
+          retention-days: 30
+
+      - name: Attach OpenWin-Brave.zip to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/OpenWin-Brave.zip
+          archive: false
+          retention-days: 30
+
+      - name: Attach OpenWin-Chrome.zip to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/OpenWin-Chrome.zip
+          archive: false
+          retention-days: 30
+
       - name: Publish a new release
-        if: steps.check.outputs.stale == 'true'
+        if: steps.check.outputs.build == 'true' && github.ref_name == 'main'
         env:
           SHA: ${{ steps.check.outputs.sha }}
           PREVIOUS: ${{ steps.check.outputs.previous }}
@@ -222,16 +251,7 @@ jobs:
           brave=$(jq -r .version 'Brave/$OEM$/$$/Setup/Files/Brave.json')
           chrome=$(jq -r .version 'Chrome/$OEM$/$$/Setup/Files/Chrome.json')
           sevenzip=$(ls '$OEM$/$$/Setup/Files' | sed -n 's/^7z\([0-9]*\)\([0-9][0-9]\)-x64\.exe$/\1.\2/p')
-          date=$(date -u +%Y.%m.%d-%H%M)
-          if [ "$GITHUB_REF_NAME" = main ]; then
-            tag=$date
-            title="OpenWin ${date%-*}"
-            kind=--latest
-          else
-            tag=$GITHUB_REF_NAME-$date
-            title="OpenWin $GITHUB_REF_NAME $date"
-            kind=--prerelease
-          fi
+          tag=$(date -u +%Y.%m.%d-%H%M)
           # The first line of every commit since the previous release.
           changes=
           if [ -n "$PREVIOUS" ]; then
@@ -239,17 +259,13 @@ jobs:
               --jq '.commits[] | "- " + (.commit.message | split("\n")[0])')
           fi
           {
-            if [ "$GITHUB_REF_NAME" != main ]; then
-              printf '> [!WARNING]\n> A test build from the %s branch. For everyday use, download the [latest release](https://github.com/%s/releases/latest).\n\n' \
-                "$GITHUB_REF_NAME" "$GH_REPO"
-            fi
             if [ -n "$changes" ]; then
               printf '## Changes\n\n%s\n\n' "$changes"
               printf '[All changes since %s](https://github.com/%s/compare/%s...%s)\n\n' \
                 "$PREVIOUS_TAG" "$GH_REPO" "$PREVIOUS_TAG" "$tag"
             fi
             sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@CHROME@|$chrome|" \
-              -e "s|@SEVENZIP@|$sevenzip|" -e "s|@REPO@|$GH_REPO|" -e "s|@BRANCH@|$GITHUB_REF_NAME|" <<'EOF'
+              -e "s|@SEVENZIP@|$sevenzip|" -e "s|@REPO@|$GH_REPO|" <<'EOF'
           ## Downloads
 
           Built from @SHA@ with Brave @BRAVE@, Chrome @CHROME@ and 7-Zip @SEVENZIP@.
@@ -257,10 +273,10 @@ jobs:
           - **autounattend-Brave.iso** or **autounattend-Chrome.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
           - **OpenWin-Brave.zip** or **OpenWin-Chrome.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.
 
-          See the [README](https://github.com/@REPO@/tree/@BRANCH@#readme) for step-by-step instructions.
+          See the [README](https://github.com/@REPO@#readme) for step-by-step instructions.
           EOF
           } > notes.md
           # gh uploads the files to a draft and publishes it only once they're all
           # there, so the download links never point at a release without them.
-          gh release create "$tag" dist/* \
-            "$kind" --target "$SHA" --title "$title · Brave $brave · Chrome $chrome · 7-Zip $sevenzip" --notes-file notes.md
+          gh release create "$tag" dist/* --latest --target "$SHA" \
+            --title "OpenWin ${tag%-*} · Brave $brave · Chrome $chrome · 7-Zip $sevenzip" --notes-file notes.md
