@@ -23,9 +23,6 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE]
 "BypassNRO"=dword:00000001
 
-[HKEY_USERS\Default\Software\Microsoft\Windows\CurrentVersion\Run]
-"OneDriveSetup"=-
-
 [HKEY_USERS\Default\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced]
 "Hidden"=dword:00000001
 "HideFileExt"=dword:00000000

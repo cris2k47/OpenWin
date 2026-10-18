@@ -24,22 +24,26 @@
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>3</Order>
-                    <Path>"%SYSTEMROOT%\Setup\Files\7z2604-x64.exe" /S</Path>
+                    <Path>conhost --headless "%SYSTEMROOT%\Setup\Scripts\RemovePkgs.cmd"</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>4</Order>
-                    <Path>"%SYSTEMROOT%\Setup\Files\BraveBrowserStandaloneSetup.exe" /silent /install</Path>
+                    <Path>"%SYSTEMROOT%\Setup\Files\7z2604-x64.exe" /S</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>5</Order>
-                    <Path>reg load "HKU\Default" "%SYSTEMDRIVE%\Users\Default\NTUSER.DAT"</Path>
+                    <Path>"%SYSTEMROOT%\Setup\Files\BraveBrowserStandaloneSetup.exe" /silent /install</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>6</Order>
-                    <Path>reg import "%SYSTEMROOT%\Setup\Files\OpenWin.reg"</Path>
+                    <Path>reg load "HKU\Default" "%SYSTEMDRIVE%\Users\Default\NTUSER.DAT"</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>7</Order>
+                    <Path>reg import "%SYSTEMROOT%\Setup\Files\OpenWin.reg"</Path>
+                </RunSynchronousCommand>
+                <RunSynchronousCommand wcm:action="add">
+                    <Order>8</Order>
                     <Path>reg unload "HKU\Default"</Path>
                 </RunSynchronousCommand>
             </RunSynchronous>

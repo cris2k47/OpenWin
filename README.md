@@ -53,7 +53,7 @@ and always ships the latest Brave or Chrome and 7-Zip (see [Always up to date](#
   Dev Home, Family, Feedback Hub, Get Help, News, Outlook (new), Phone Link,
   Power Automate, Quick Assist, Solitaire Collection, Sound Recorder, Sticky
   Notes, Teams, Terminal, To Do, Weather, Widgets and Xbox.
-- OneDrive isn't set up for new users.
+- OneDrive is removed.
 - The Start menu only has Brave, Microsoft Store, Settings, Photos, Paint,
   Calculator, Notepad, Snipping Tool and File Explorer. The taskbar has File
   Explorer and Brave.
