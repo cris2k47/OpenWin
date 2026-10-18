@@ -8,6 +8,7 @@ for %%A in (
     Microsoft.Copilot
     Microsoft.GamingApp
     Microsoft.GetHelp
+    Microsoft.MicrosoftOfficeHub
     Microsoft.MicrosoftSolitaireCollection
     Microsoft.MicrosoftStickyNotes
     Microsoft.OutlookForWindows
