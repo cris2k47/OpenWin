@@ -8,15 +8,17 @@ It's an answer file for Windows Setup (`autounattend.xml`) plus an `$OEM$`
 folder with everything it installs. You add them to the official Windows 11
 installer from Microsoft, either on a USB drive or in a virtual machine.
 
+It comes in two editions: with Brave, or with Google Chrome.
+
 ## Downloads
 
-| File | Use it for |
-| --- | --- |
-| [**OpenWin.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin.zip) | A USB drive made with the Media Creation Tool |
-| [**autounattend.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend.iso) | A virtual machine |
+| Edition | For a USB drive made with the Media Creation Tool | For a virtual machine |
+| --- | --- | --- |
+| Brave | [**OpenWin-Brave.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Brave.zip) | [**autounattend-Brave.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Brave.iso) |
+| Chrome | [**OpenWin-Chrome.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip) | [**autounattend-Chrome.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso) |
 
-Both contain the same two things, `autounattend.xml` and the `$OEM$` folder,
-and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-to-date)).
+Each contains the same two things, `autounattend.xml` and the `$OEM$` folder,
+and always ships the latest Brave or Chrome and 7-Zip (see [Always up to date](#always-up-to-date)).
 
 ## What you get
 
@@ -39,6 +41,11 @@ and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-t
     statistics (P3A) are off.
 - **7-Zip** opens archives and disk images: zip, 7z, rar, tar, gz, xz, zst,
   iso, cab, wim, vhd(x), dmg and more.
+
+**In the Chrome edition**
+- **Google Chrome** replaces Brave as the default browser and PDF viewer, in
+  the Start menu and on the taskbar. Chrome itself keeps all its default
+  settings.
 
 **No bloat**
 - Microsoft Edge is uninstalled.
@@ -66,7 +73,8 @@ and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-t
 ## Install from a USB drive
 
 1. Make a Windows 11 USB drive with the [Media Creation Tool](https://www.microsoft.com/software-download/windows11).
-2. Download [OpenWin.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin.zip) and extract it.
+2. Download [OpenWin-Brave.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Brave.zip) or
+   [OpenWin-Chrome.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip) and extract it.
 3. Copy `autounattend.xml` and the `$OEM$` folder to the root of the USB drive,
    next to `setup.exe`.
 4. Boot the PC from the USB drive.
@@ -74,10 +82,11 @@ and always ship the latest Brave and 7-Zip (see [Always up to date](#always-up-t
 ## Install in a virtual machine
 
 1. Download the Windows 11 ISO from [Microsoft](https://www.microsoft.com/software-download/windows11)
-   and [autounattend.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend.iso).
+   and [autounattend-Brave.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Brave.iso) or
+   [autounattend-Chrome.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso).
 2. Create the virtual machine with at least 2 CPUs and the Windows 11 ISO as its
    boot CD/DVD drive. Windows 11 Setup refuses machines with a single CPU.
-3. Add a second CD/DVD drive with `autounattend.iso`.
+3. Add a second CD/DVD drive with `autounattend-Brave.iso` or `autounattend-Chrome.iso`.
 4. Start the virtual machine and press a key when it says *Press any key to boot
    from CD or DVD*. Windows Setup finds `autounattend.xml` on the second drive
    by itself.
@@ -114,37 +123,52 @@ activates on its own once it's online. Otherwise, enter your own Pro key in
 ## Always up to date
 
 Every 5 minutes, a [GitHub Actions workflow](.github/workflows/update-installers.yml)
-checks for new releases of Brave and 7-Zip. When one is out, it verifies the
-official installer against the checksums the publisher provides (signed by
-Brave, for Brave), commits the update to this repository and publishes a new
-release with the downloads above.
+checks for new releases of Brave, Google Chrome and 7-Zip. When one is out, it
+verifies the official installer, commits the update to this repository and
+publishes a new release with the downloads above. It checks Brave's installer
+against the checksums Brave signs, Chrome's against Google's digital signature
+(Google doesn't publish checksums), and 7-Zip's against the checksum GitHub
+lists for it.
 
-Brave's offline installer is larger than GitHub's 100 MB file limit, so this
-repository keeps only its version and checksum, in `Brave.json`. The downloads
-above include the installer itself.
+Brave's and Chrome's offline installers are larger than GitHub's 100 MB file
+limit, so this repository keeps only their versions and checksums, in
+`Brave.json` and `Chrome.json`. The downloads above include the installers
+themselves.
+
+Changes are tested on the [dev](https://github.com/cris2k47/OpenWin/tree/dev)
+branch first. Each change there to an edition's files publishes a pre-release,
+which the download links above never point to.
 
 ## Repository layout
 
 ```
-autounattend.xml          Answer file for Windows Setup
-$OEM$/$$/                 Copied to C:\Windows
-  Setup/Scripts/          Scripts that run during setup
-  Setup/Files/            7-Zip installer, Brave.json and registry tweaks
-  System32/               Default apps
-$OEM$/$1/                 Copied to C:\ (Brave settings, Start menu and taskbar layout)
+$OEM$/                    Files for both editions
+  $$/Setup/Scripts/       Scripts that run during setup
+  $$/Setup/Files/         7-Zip installer and registry tweaks
+Brave/                    The Brave edition
+  autounattend.xml        Answer file for Windows Setup
+  $OEM$/$$/Setup/Files/   Brave.json
+  $OEM$/$$/System32/      Default apps
+  $OEM$/$1/Users/Default/ Brave settings, Start menu and taskbar layout
+Chrome/                   The Chrome edition, laid out like Brave's
 .github/                  The workflow that keeps everything up to date
 docs/                     Screenshots and the banner for this README
 ```
 
+Each edition's `$OEM$` folder is added to the shared one.
+
+Windows Setup copies `$OEM$\$$` to `C:\Windows` and `$OEM$\$1` to `C:\`.
+
 ## License
 
-OpenWin is under the [MIT License](LICENSE). Brave and 7-Zip, which it
-installs, keep their own licenses.
+OpenWin is under the [MIT License](LICENSE). Brave, Chrome and 7-Zip, which
+it installs, keep their own licenses.
 
 ## Credits
 
 - [Brave](https://brave.com/) by Brave Software, under the Mozilla Public License 2.0.
+- [Google Chrome](https://www.google.com/chrome/) by Google, under the [Google Chrome Terms of Service](https://www.google.com/chrome/terms/).
 - [7-Zip](https://www.7-zip.org/) by Igor Pavlov, under the GNU LGPL with the unRAR restriction.
 
 Windows is a trademark of Microsoft. OpenWin isn't affiliated with Microsoft,
-Brave Software or 7-Zip.
+Brave Software, Google or 7-Zip.

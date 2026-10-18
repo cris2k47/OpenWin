@@ -2,9 +2,8 @@
 """Update the Brave installer that OpenWin ships.
 
 Brave's offline installer is larger than GitHub's 100 MiB file limit, so the
-repository keeps only its version, URL and SHA-256 in Setup\\Files\\Brave.json,
-and the release job downloads it when it builds OpenWin.zip and
-autounattend.iso.
+repository keeps only its version, URL and SHA-256 in Brave.json, and the
+release job downloads it when it builds the Brave edition.
 
 By default, checks for a new Brave Release-channel version, verifies the
 installer's SHA-256 against Brave's GPG-signed checksum file, and updates
@@ -33,7 +32,7 @@ KEYS_URL = "https://brave-browser-downloads.s3.brave.com/keys/github-checksums-r
 SETUP_NAME = "BraveBrowserStandaloneSetup.exe"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PIN = Path("$OEM$", "$$", "Setup", "Files", "Brave.json")
+PIN = Path("Brave", "$OEM$", "$$", "Setup", "Files", "Brave.json")
 # Brave's "GitHub Checksums - Release Channel" keys (https://brave.com/signing-keys/).
 # Beta and Nightly checksums are signed with other keys.
 KEYRING = Path(".github", "brave-checksums-release.asc")

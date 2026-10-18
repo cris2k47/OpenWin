@@ -3,7 +3,8 @@
 
 Downloads the latest 7-Zip release from its official GitHub repository,
 verifies it against the SHA-256 digest GitHub publishes for the file,
-replaces the installer in Setup\\Files, and points autounattend.xml at it.
+replaces the installer in Setup\\Files, and points each edition's
+autounattend.xml at it.
 """
 
 import argparse
@@ -22,7 +23,7 @@ RELEASES_URL = "https://api.github.com/repos/ip7z/7zip/releases"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FILES_DIR = Path("$OEM$", "$$", "Setup", "Files")
-UNATTEND = Path("autounattend.xml")
+UNATTENDS = [Path("Brave", "autounattend.xml"), Path("Chrome", "autounattend.xml")]
 
 TAG_PATTERN = re.compile(r"(\d+)\.(\d\d)")
 # 7-Zip 26.04 is 7z2604-x64.exe.
@@ -77,7 +78,7 @@ def main():
     args = parser.parse_args()
 
     files_dir = args.root / FILES_DIR
-    unattend = args.root / UNATTEND
+    unattends = [args.root / path for path in UNATTENDS]
 
     old_setups = [p for p in files_dir.iterdir() if SETUP_PATTERN.fullmatch(p.name)]
     if len(old_setups) > 1:
@@ -100,13 +101,15 @@ def main():
 
     print(f"Updating 7-Zip {old_version} -> {version}")
 
-    # Read autounattend.xml first so a bad file fails before anything changes.
-    with open(unattend, newline="") as f:
-        xml = f.read()
+    # Read the answer files first so a bad one fails before anything changes.
     setup_name = f"7z{match.group(1)}{match.group(2)}-x64.exe"
-    xml, count = SETUP_PATTERN.subn(setup_name, xml)
-    if not count:
-        raise RuntimeError(f"No 7-Zip installer referenced in {unattend}")
+    xmls = {}
+    for unattend in unattends:
+        with open(unattend, newline="") as f:
+            xml, count = SETUP_PATTERN.subn(setup_name, f.read())
+        if not count:
+            raise RuntimeError(f"No 7-Zip installer referenced in {unattend}")
+        xmls[unattend] = xml
 
     asset = next((a for a in release["assets"] if a["name"] == setup_name), None)
     if not asset:
@@ -124,8 +127,9 @@ def main():
             old_setup.unlink()
         shutil.move(new_setup, files_dir / setup_name)
 
-    with open(unattend, "w", newline="") as f:
-        f.write(xml)
+    for unattend, xml in xmls.items():
+        with open(unattend, "w", newline="") as f:
+            f.write(xml)
 
     print(f"Updated 7-Zip to {version}")
     write_outputs(updated="true", version=version)

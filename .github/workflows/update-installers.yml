@@ -1,8 +1,9 @@
 name: Update installers
 
-# An external scheduler (cron-job.org) starts this workflow every 5 minutes
-# through the workflow_dispatch API, because GitHub's schedule trigger never
-# fired for this repository.
+# An external scheduler (cron-job.org) starts this workflow on main every 5
+# minutes through the workflow_dispatch API, because GitHub's schedule trigger
+# never fired for this repository. Every push to dev starts it on dev, which
+# publishes a test pre-release.
 on:
   workflow_dispatch:
     inputs:
@@ -10,12 +11,15 @@ on:
         description: Publish a new release even if nothing changed
         type: boolean
         default: false
+  push:
+    branches: [dev]
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-installers
+  # One run at a time per branch, so runs on main never cancel runs on dev.
+  group: update-installers-${{ github.ref_name }}
 
 jobs:
   brave:
@@ -44,7 +48,7 @@ jobs:
           git commit -m "Update Brave to $VERSION"
           git push
 
-  seven-zip:
+  chrome:
     # Run after the Brave job, even if it failed, so the two never push at the
     # same time.
     needs: brave
@@ -55,6 +59,45 @@ jobs:
         with:
           # Check out the branch tip so a Brave update pushed by the previous job
           # is included.
+          ref: ${{ github.ref }}
+
+      - name: Check whether Google published a new Chrome installer
+        id: check
+        run: python3 .github/scripts/update_chrome.py --check
+
+      - name: Install osslsigncode and msitools
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq osslsigncode msitools
+
+      - name: Pin the latest Chrome release
+        id: chrome
+        if: steps.check.outputs.changed == 'true'
+        run: python3 .github/scripts/update_chrome.py
+
+      - name: Commit and push
+        if: steps.chrome.outputs.commit
+        env:
+          MESSAGE: ${{ steps.chrome.outputs.commit }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "$MESSAGE"
+          git push
+
+  seven-zip:
+    # Run after the Chrome job, even if it failed, so the two never push at the
+    # same time.
+    needs: chrome
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Check out the branch tip so updates pushed by the previous jobs are
+          # included.
           ref: ${{ github.ref }}
 
       - name: Download the latest 7-Zip release
@@ -75,38 +118,63 @@ jobs:
           git push
 
   release:
-    # Publish a new release with autounattend.iso and OpenWin.zip whenever
-    # autounattend.xml or $OEM$ on the branch differ from the newest release,
-    # whether they changed through an update above or any other push.
-    needs: [brave, seven-zip]
+    # Publish a new release with both editions whenever $OEM$, Brave or Chrome
+    # on the branch differ from the branch's newest release,
+    # whether they changed through an update above or any other push. main
+    # publishes releases, and other branches publish pre-releases whose tags
+    # start with the branch name, such as dev-2026.10.17-1840.
+    needs: [brave, chrome, seven-zip]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
-      - name: Check whether the newest release is up to date
+      - name: Check whether the branch's newest release is up to date
         id: check
         env:
           REBUILD: ${{ inputs.rebuild }}
         run: |
-          # The Git object IDs of autounattend.xml and $OEM$ change exactly when
-          # their contents do.
+          # The Git object IDs of these change exactly when their contents do.
           contents() {
-            gh api "repos/$GH_REPO/git/trees/$1" \
-              --jq '[.tree[] | select(.path == "autounattend.xml" or .path == "$OEM$") | .sha] | join(" ")'
+            gh api "repos/$GH_REPO/git/trees/$1" --jq '[.tree[]
+              | select(.path == "$OEM$" or .path == "Brave" or .path == "Chrome")
+              | .sha] | join(" ")'
           }
           sha=$(gh api "repos/$GH_REPO/git/ref/heads/$GITHUB_REF_NAME" --jq .object.sha)
-          # The newest release's tag points at the commit it was built from.
-          released=
-          if tag=$(gh api "repos/$GH_REPO/releases/latest" --jq .tag_name 2>/dev/null); then
-            released=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha 2>/dev/null) || released=
+          # Only a 404 means there's no release yet. Any other error stops here,
+          # rather than counting as a change and publishing a duplicate.
+          if ! latest=$(gh api "repos/$GH_REPO/releases/latest" --jq .tag_name 2> "$RUNNER_TEMP/error"); then
+            grep -q 'HTTP 404' "$RUNNER_TEMP/error" || { cat "$RUNNER_TEMP/error" >&2; exit 1; }
+            latest=
+          fi
+          if [ "$GITHUB_REF_NAME" = main ]; then
+            tag=$latest
+          else
+            # Tags such as dev-2026.10.17-1840 sort by date.
+            tags=$(gh api --paginate "repos/$GH_REPO/releases?per_page=100" --jq ".[]
+              | select((.draft | not) and (.tag_name | startswith(\"$GITHUB_REF_NAME-\"))) | .tag_name")
+            tag=$(printf '%s\n' "$tags" | sort | tail -n 1)
+          fi
+          # A branch's first pre-release lists its changes since the latest release.
+          previous_tag=${tag:-$latest}
+          previous=
+          if [ -n "$previous_tag" ]; then
+            # A release's tag points at the commit it was built from.
+            previous=$(gh api "repos/$GH_REPO/commits/$previous_tag" --jq .sha)
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          echo "previous=$released" >> "$GITHUB_OUTPUT"
-          echo "previous_tag=$tag" >> "$GITHUB_OUTPUT"
-          if [ "$REBUILD" = true ] || [ -z "$released" ] ||
-             [ "$(contents "$sha")" != "$(contents "$released")" ]; then
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          echo "previous_tag=$previous_tag" >> "$GITHUB_OUTPUT"
+          stale=
+          if [ "$REBUILD" = true ] || [ -z "$tag" ]; then
+            stale=true
+          else
+            now=$(contents "$sha")
+            released=$(contents "$previous")
+            if [ "$now" != "$released" ]; then stale=true; fi
+          fi
+          if [ "$stale" = true ]; then
             echo "stale=true" >> "$GITHUB_OUTPUT"
           else
             echo "The newest release, $tag, is up to date."
@@ -117,21 +185,32 @@ jobs:
         with:
           ref: ${{ steps.check.outputs.sha }}
 
-      - name: Build autounattend.iso and OpenWin.zip
+      - name: Build both editions
         if: steps.check.outputs.stale == 'true'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq genisoimage
-          mkdir staging dist
-          cp -r autounattend.xml '$OEM$' staging/
-          # Brave's installer is too big for the repository, which pins it in
-          # Brave.json instead. Swap the pin for the verified installer.
-          python3 .github/scripts/update_brave.py --download 'staging/$OEM$/$$/Setup/Files'
-          rm 'staging/$OEM$/$$/Setup/Files/Brave.json'
-          # UDF for Windows Setup, plus Joliet and Rock Ridge for other systems.
-          # -D keeps the deep $OEM$\$1\Users\Default\... folders where they are.
-          genisoimage -quiet -o dist/autounattend.iso -V OPENWIN -udf -J -joliet-long -r -D staging
-          (cd staging && zip -q -r -X ../dist/OpenWin.zip autounattend.xml '$OEM$')
+          dist=$PWD/dist
+          mkdir "$dist"
+          # Each edition is the shared $OEM$ plus the edition's folder: its
+          # autounattend.xml and its own $OEM$ files.
+          build() {
+            local edition=$1 staging=staging/$1
+            mkdir -p "$staging"
+            cp -r '$OEM$' "$staging/"
+            cp -r "$edition"/. "$staging/"
+            # The browser's installer is too big for the repository, which pins
+            # it in a JSON file instead. Swap the pin for the verified installer.
+            files="$staging"/'$OEM$/$$/Setup/Files'
+            python3 ".github/scripts/update_${edition,,}.py" --download "$files"
+            rm "$files/$edition.json"
+            # UDF for Windows Setup, plus Joliet and Rock Ridge for other systems.
+            # -D keeps the deep $OEM$\$1\Users\Default\... folders where they are.
+            genisoimage -quiet -o "$dist/autounattend-$edition.iso" -V OPENWIN -udf -J -joliet-long -r -D "$staging"
+            (cd "$staging" && zip -q -r -X "$dist/OpenWin-$edition.zip" autounattend.xml '$OEM$')
+          }
+          build Brave
+          build Chrome
 
       - name: Publish a new release
         if: steps.check.outputs.stale == 'true'
@@ -140,10 +219,19 @@ jobs:
           PREVIOUS: ${{ steps.check.outputs.previous }}
           PREVIOUS_TAG: ${{ steps.check.outputs.previous_tag }}
         run: |
-          files='$OEM$/$$/Setup/Files'
-          brave=$(jq -r .version "$files/Brave.json")
-          sevenzip=$(ls "$files" | sed -n 's/^7z\([0-9]*\)\([0-9][0-9]\)-x64\.exe$/\1.\2/p')
-          tag=$(date -u +%Y.%m.%d-%H%M)
+          brave=$(jq -r .version 'Brave/$OEM$/$$/Setup/Files/Brave.json')
+          chrome=$(jq -r .version 'Chrome/$OEM$/$$/Setup/Files/Chrome.json')
+          sevenzip=$(ls '$OEM$/$$/Setup/Files' | sed -n 's/^7z\([0-9]*\)\([0-9][0-9]\)-x64\.exe$/\1.\2/p')
+          date=$(date -u +%Y.%m.%d-%H%M)
+          if [ "$GITHUB_REF_NAME" = main ]; then
+            tag=$date
+            title="OpenWin ${date%-*}"
+            kind=--latest
+          else
+            tag=$GITHUB_REF_NAME-$date
+            title="OpenWin $GITHUB_REF_NAME $date"
+            kind=--prerelease
+          fi
           # The first line of every commit since the previous release.
           changes=
           if [ -n "$PREVIOUS" ]; then
@@ -151,24 +239,28 @@ jobs:
               --jq '.commits[] | "- " + (.commit.message | split("\n")[0])')
           fi
           {
+            if [ "$GITHUB_REF_NAME" != main ]; then
+              printf '> [!WARNING]\n> A test build from the %s branch. For everyday use, download the [latest release](https://github.com/%s/releases/latest).\n\n' \
+                "$GITHUB_REF_NAME" "$GH_REPO"
+            fi
             if [ -n "$changes" ]; then
               printf '## Changes\n\n%s\n\n' "$changes"
               printf '[All changes since %s](https://github.com/%s/compare/%s...%s)\n\n' \
                 "$PREVIOUS_TAG" "$GH_REPO" "$PREVIOUS_TAG" "$tag"
             fi
-            sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@SEVENZIP@|$sevenzip|" \
-              -e "s|@REPO@|$GH_REPO|" <<'EOF'
+            sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@CHROME@|$chrome|" \
+              -e "s|@SEVENZIP@|$sevenzip|" -e "s|@REPO@|$GH_REPO|" -e "s|@BRANCH@|$GITHUB_REF_NAME|" <<'EOF'
           ## Downloads
 
-          Built from @SHA@ with Brave @BRAVE@ and 7-Zip @SEVENZIP@.
+          Built from @SHA@ with Brave @BRAVE@, Chrome @CHROME@ and 7-Zip @SEVENZIP@.
 
-          - **autounattend.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
-          - **OpenWin.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.
+          - **autounattend-Brave.iso** or **autounattend-Chrome.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
+          - **OpenWin-Brave.zip** or **OpenWin-Chrome.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.
 
-          See the [README](https://github.com/@REPO@#readme) for step-by-step instructions.
+          See the [README](https://github.com/@REPO@/tree/@BRANCH@#readme) for step-by-step instructions.
           EOF
           } > notes.md
           # gh uploads the files to a draft and publishes it only once they're all
           # there, so the download links never point at a release without them.
-          gh release create "$tag" dist/autounattend.iso dist/OpenWin.zip --latest --target "$SHA" \
-            --title "OpenWin ${tag%-*} · Brave $brave · 7-Zip $sevenzip" --notes-file notes.md
+          gh release create "$tag" dist/* \
+            "$kind" --target "$SHA" --title "$title · Brave $brave · Chrome $chrome · 7-Zip $sevenzip" --notes-file notes.md
