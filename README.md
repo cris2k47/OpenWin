@@ -120,6 +120,8 @@ Tips for some hypervisors:
 ## What Setup still asks you
 
 - Your language, time format and keyboard.
+- Which edition of Windows 11 to install, such as Home or Pro, unless the PC
+  has a license in its firmware (see [Activation](#activation)).
 - Where to install Windows. **Setup can erase the drive you pick, so back up first.**
 - Your region and keyboard layout.
 - On a PC without a wired connection, a Wi-Fi network. Choose *I don't have
@@ -129,9 +131,13 @@ Tips for some hypervisors:
 
 ## Activation
 
-OpenWin installs Windows 11 Pro with Microsoft's generic installation key,
-which doesn't activate Windows. A PC with a Windows 10 or 11 Pro digital license
-activates on its own once it's online. Otherwise, enter your own Pro key in
+Setup doesn't ask for a product key. It lets you choose which edition of
+Windows 11 to install instead. A PC that came with Windows usually has a license
+in its firmware, and Setup then installs that license's edition without asking.
+
+Windows activates on its own once it's online if the PC has a license for the
+edition installed, either in its firmware or as a digital license from an
+earlier Windows 10 or 11. Otherwise, enter a product key in
 *Settings → System → Activation*.
 
 ## Always up to date

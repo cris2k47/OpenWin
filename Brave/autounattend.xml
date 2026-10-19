@@ -55,7 +55,7 @@
             <UserData>
                 <AcceptEula>true</AcceptEula>
                 <ProductKey>
-                    <Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key>
+                    <WillShowUI>Never</WillShowUI>
                 </ProductKey>
             </UserData>
             <RunSynchronous>
