@@ -19,7 +19,6 @@ for %%A in (
     Microsoft.WindowsCamera
     Microsoft.WindowsFeedbackHub
     Microsoft.WindowsSoundRecorder
-    Microsoft.WindowsTerminal
     Microsoft.YourPhone
     MicrosoftCorporationII.MicrosoftFamily
     MicrosoftCorporationII.QuickAssist

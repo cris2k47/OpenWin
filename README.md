@@ -63,8 +63,8 @@ editions (see [Always up to date](#always-up-to-date)).
 - These preinstalled apps are removed: Clipchamp, Clock, Camera, Copilot,
   Dev Home, Family, Feedback Hub, Get Help, Microsoft 365 Copilot, News,
   Outlook (new), Phone Link, Power Automate, Quick Assist, Solitaire
-  Collection, Sound Recorder, Sticky Notes, Teams, Terminal, To Do, Weather,
-  Widgets and Xbox.
+  Collection, Sound Recorder, Sticky Notes, Teams, To Do, Weather, Widgets and
+  Xbox.
 - OneDrive is removed.
 - The Start menu only has Brave, Microsoft Store, Settings, Photos, Paint,
   Calculator, Notepad, Snipping Tool and File Explorer. The taskbar has File
