@@ -3,7 +3,7 @@ name: Update installers
 # An external scheduler (cron-job.org) starts this workflow on main every 5
 # minutes through the workflow_dispatch API, because GitHub's schedule trigger
 # never fired for this repository. Every push to dev starts it on dev, which
-# builds both editions to test and attaches them to the run, without publishing
+# builds every edition to test and attaches them to the run, without publishing
 # a release.
 on:
   workflow_dispatch:
@@ -119,11 +119,11 @@ jobs:
           git push
 
   release:
-    # On main, publish a new release with both editions whenever $OEM$, Brave or
-    # Chrome differ from the latest release, whether they changed through an
-    # update above or any other push. On other branches, such as dev, build both
-    # editions on every run and attach them to the run to test, without
-    # publishing a release.
+    # On main, publish a new release with every edition whenever $OEM$ or an
+    # edition's folder differs from the latest release, whether it changed
+    # through an update above or any other push. On other branches, such as dev,
+    # build every edition on every run and attach them to the run to test,
+    # without publishing a release.
     needs: [brave, chrome, seven-zip]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
@@ -145,7 +145,7 @@ jobs:
           # The Git object IDs of these change exactly when their contents do.
           contents() {
             gh api "repos/$GH_REPO/git/trees/$1" --jq '[.tree[]
-              | select(.path == "$OEM$" or .path == "Brave" or .path == "Chrome")
+              | select(.path == "$OEM$" or .path == "Brave" or .path == "Chrome" or .path == "Edge")
               | .sha] | join(" ")'
           }
           # Only a 404 means there's no release yet. Any other error stops here,
@@ -180,7 +180,7 @@ jobs:
         with:
           ref: ${{ steps.check.outputs.sha }}
 
-      - name: Build both editions
+      - name: Build every edition
         if: steps.check.outputs.build == 'true'
         run: |
           sudo apt-get update -qq
@@ -194,11 +194,14 @@ jobs:
             mkdir -p "$staging"
             cp -r '$OEM$' "$staging/"
             cp -r "$edition"/. "$staging/"
-            # The browser's installer is too big for the repository, which pins
-            # it in a JSON file instead. Swap the pin for the verified installer.
+            # A browser's installer is too big for the repository, which pins it
+            # in a JSON file instead. Swap the pin for the verified installer.
+            # Edge comes with Windows, so it has none.
             files="$staging"/'$OEM$/$$/Setup/Files'
-            python3 ".github/scripts/update_${edition,,}.py" --download "$files"
-            rm "$files/$edition.json"
+            if [ -f "$files/$edition.json" ]; then
+              python3 ".github/scripts/update_${edition,,}.py" --download "$files"
+              rm "$files/$edition.json"
+            fi
             # UDF for Windows Setup, plus Joliet and Rock Ridge for other systems.
             # -D keeps the deep $OEM$\$1\Users\Default\... folders where they are.
             genisoimage -quiet -o "$dist/autounattend-$edition.iso" -V OPENWIN -udf -J -joliet-long -r -D "$staging"
@@ -206,6 +209,7 @@ jobs:
           }
           build Brave
           build Chrome
+          build Edge
 
       # On branches other than main, attach the files to the run, each as it is
       # rather than zipped, to download and test from the run's page.
@@ -241,6 +245,22 @@ jobs:
           archive: false
           retention-days: 30
 
+      - name: Attach autounattend-Edge.iso to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/autounattend-Edge.iso
+          archive: false
+          retention-days: 30
+
+      - name: Attach OpenWin-Edge.zip to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/OpenWin-Edge.zip
+          archive: false
+          retention-days: 30
+
       - name: Publish a new release
         if: steps.check.outputs.build == 'true' && github.ref_name == 'main'
         env:
@@ -270,8 +290,8 @@ jobs:
 
           Built from @SHA@ with Brave @BRAVE@, Chrome @CHROME@ and 7-Zip @SEVENZIP@.
 
-          - **autounattend-Brave.iso** or **autounattend-Chrome.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
-          - **OpenWin-Brave.zip** or **OpenWin-Chrome.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.
+          - **autounattend-Brave.iso**, **autounattend-Chrome.iso** or **autounattend-Edge.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
+          - **OpenWin-Brave.zip**, **OpenWin-Chrome.zip** or **OpenWin-Edge.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.
 
           See the [README](https://github.com/@REPO@#readme) for step-by-step instructions.
           EOF

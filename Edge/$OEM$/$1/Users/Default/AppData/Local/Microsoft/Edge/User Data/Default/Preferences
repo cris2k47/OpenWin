@@ -1,0 +1,6 @@
+{
+   "browser": {
+      "show_discover_toolbar_button": false,
+      "show_toolbar_downloads_button": true
+   }
+}

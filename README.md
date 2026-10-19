@@ -8,7 +8,8 @@ It's an answer file for Windows Setup (`autounattend.xml`) plus an `$OEM$`
 folder with everything it installs. You add them to the official Windows 11
 installer from Microsoft, either on a USB drive or in a virtual machine.
 
-It comes in two editions: with Brave, or with Google Chrome.
+It comes in three editions: with Brave, with Google Chrome, or with Microsoft
+Edge.
 
 ## Downloads
 
@@ -16,9 +17,11 @@ It comes in two editions: with Brave, or with Google Chrome.
 | --- | --- | --- |
 | Brave | [**OpenWin-Brave.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Brave.zip) | [**autounattend-Brave.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Brave.iso) |
 | Chrome | [**OpenWin-Chrome.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip) | [**autounattend-Chrome.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso) |
+| Edge | [**OpenWin-Edge.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Edge.zip) | [**autounattend-Edge.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Edge.iso) |
 
 Each contains the same two things, `autounattend.xml` and the `$OEM$` folder,
-and always ships the latest Brave or Chrome and 7-Zip (see [Always up to date](#always-up-to-date)).
+and always ships the latest 7-Zip, plus the latest Brave or Chrome in those
+editions (see [Always up to date](#always-up-to-date)).
 
 ## What you get
 
@@ -47,8 +50,16 @@ and always ships the latest Brave or Chrome and 7-Zip (see [Always up to date](#
   the Start menu and on the taskbar. Chrome itself keeps all its default
   settings.
 
+**In the Edge edition**
+- **Microsoft Edge** stays installed instead of Brave, as Windows ships it,
+  pinned to the Start menu and taskbar. Each user starts with these settings,
+  which they can change later in Edge's settings:
+  - No welcome screens the first time Edge opens, and no prompt to use Edge's
+    recommended browser settings.
+  - No Copilot button on the toolbar, and the Downloads button is always shown.
+
 **No bloat**
-- Microsoft Edge is uninstalled.
+- Microsoft Edge is uninstalled, except in the Edge edition.
 - These preinstalled apps are removed: Clipchamp, Clock, Camera, Copilot,
   Dev Home, Family, Feedback Hub, Get Help, Microsoft 365 Copilot, News,
   Outlook (new), Phone Link, Power Automate, Quick Assist, Solitaire
@@ -74,8 +85,9 @@ and always ships the latest Brave or Chrome and 7-Zip (see [Always up to date](#
 ## Install from a USB drive
 
 1. Make a Windows 11 USB drive with the [Media Creation Tool](https://www.microsoft.com/software-download/windows11).
-2. Download [OpenWin-Brave.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Brave.zip) or
-   [OpenWin-Chrome.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip) and extract it.
+2. Download [OpenWin-Brave.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Brave.zip),
+   [OpenWin-Chrome.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip) or
+   [OpenWin-Edge.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Edge.zip) and extract it.
 3. Copy `autounattend.xml` and the `$OEM$` folder to the root of the USB drive,
    next to `setup.exe`.
 4. Boot the PC from the USB drive.
@@ -83,11 +95,13 @@ and always ships the latest Brave or Chrome and 7-Zip (see [Always up to date](#
 ## Install in a virtual machine
 
 1. Download the Windows 11 ISO from [Microsoft](https://www.microsoft.com/software-download/windows11)
-   and [autounattend-Brave.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Brave.iso) or
-   [autounattend-Chrome.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso).
+   and [autounattend-Brave.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Brave.iso),
+   [autounattend-Chrome.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso) or
+   [autounattend-Edge.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Edge.iso).
 2. Create the virtual machine with at least 2 CPUs and the Windows 11 ISO as its
    boot CD/DVD drive. Windows 11 Setup refuses machines with a single CPU.
-3. Add a second CD/DVD drive with `autounattend-Brave.iso` or `autounattend-Chrome.iso`.
+3. Add a second CD/DVD drive with `autounattend-Brave.iso`, `autounattend-Chrome.iso`
+   or `autounattend-Edge.iso`.
 4. Start the virtual machine and press a key when it says *Press any key to boot
    from CD or DVD*. Windows Setup finds `autounattend.xml` on the second drive
    by itself.
@@ -134,24 +148,27 @@ lists for it.
 Brave's and Chrome's offline installers are larger than GitHub's 100 MB file
 limit, so this repository keeps only their versions and checksums, in
 `Brave.json` and `Chrome.json`. The downloads above include the installers
-themselves.
+themselves. Edge comes with Windows and updates itself.
 
 Changes are tested on the [dev](https://github.com/cris2k47/OpenWin/tree/dev)
-branch first. Each push there builds both editions and attaches them to its
+branch first. Each push there builds every edition and attaches them to its
 workflow run in GitHub Actions, without publishing a release.
 
 ## Repository layout
 
 ```
-$OEM$/                    Files for both editions
+$OEM$/                    Files for every edition
   $$/Setup/Scripts/       Scripts that run during setup
   $$/Setup/Files/         7-Zip installer and registry tweaks
 Brave/                    The Brave edition
   autounattend.xml        Answer file for Windows Setup
   $OEM$/$$/Setup/Files/   Brave.json
+  $OEM$/$$/Setup/Scripts/ RemoveEdge.cmd, which uninstalls Edge
   $OEM$/$$/System32/      Default apps
   $OEM$/$1/Users/Default/ Brave settings, Start menu and taskbar layout
 Chrome/                   The Chrome edition, laid out like Brave's
+Edge/                     The Edge edition: its answer file, default apps, Edge settings,
+                          Start menu and taskbar layout
 .github/                  The workflow that keeps everything up to date
 docs/                     Screenshots and the banner for this README
 ```
