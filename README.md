@@ -75,7 +75,6 @@ editions (see [Always up to date](#always-up-to-date)).
 - Dark theme and the classic right-click menu.
 - File Explorer opens to This PC and shows file extensions and hidden files.
 - Mouse acceleration is off.
-- Windows Update doesn't replace your drivers.
 
 **Easier setup**
 - Works on PCs without TPM 2.0, Secure Boot or 4 GB of RAM.
