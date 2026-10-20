@@ -33,8 +33,8 @@ from pathlib import Path
 # Offline, installs Chrome for all users, and includes Google's updater.
 URL = "https://dl.google.com/dl/chrome/install/googlechromestandaloneenterprise64.msi"
 SETUP_NAME = "googlechromestandaloneenterprise64.msi"
-# The end of the subject of the certificate Google signs Chrome with.
-SIGNER = "/O=Google LLC/CN=Google LLC"
+# The organization and common name of the certificate Google signs Chrome with.
+SIGNER = "Google LLC"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PIN = Path("Chrome", "$OEM$", "$$", "Setup", "Files", "Chrome.json")
@@ -102,7 +102,10 @@ def verify_signature(msi):
     if result.returncode or "Signature verification: ok" not in output or not signer:
         raise RuntimeError(f"{msi.name} doesn't have a valid signature.\n{output}")
     subject = signer.group(1).strip()
-    if not subject.endswith(SIGNER):
+    # osslsigncode 2.13 prints the subject as "CN=Google LLC,O=Google LLC,...",
+    # and older versions as ".../O=Google LLC/CN=Google LLC".
+    fields = dict(re.findall(r"(?:^|[/,]) *(\w+)=([^/,]*)", subject))
+    if fields.get("O") != SIGNER or fields.get("CN") != SIGNER:
         raise RuntimeError(f"{msi.name} is signed by {subject}, not Google LLC.")
 
 
