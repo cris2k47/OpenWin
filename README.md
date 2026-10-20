@@ -1,15 +1,15 @@
 ![OpenWin: What if Windows were open source?](docs/social-preview.png)
 
 OpenWin installs Windows 11 the way an open-source operating system would ship:
-open-source apps out of the box, without Edge and most of the preinstalled apps,
-and with a local account instead of a Microsoft account.
+open-source apps out of the box, without most of the preinstalled apps, and with
+a local account instead of a Microsoft account.
 
 It's an answer file for Windows Setup (`autounattend.xml`) plus an `$OEM$`
 folder with everything it installs. You add them to the official Windows 11
 installer from Microsoft, either on a USB drive or in a virtual machine.
 
 It comes in three editions: with Brave, with Google Chrome, or with Microsoft
-Edge.
+Edge. The Brave and Chrome editions uninstall Edge.
 
 ## Downloads
 
@@ -27,7 +27,7 @@ editions (see [Always up to date](#always-up-to-date)).
 
 | The Start menu and taskbar in the Brave edition | Brave's New Tab page |
 | --- | --- |
-| ![The Start menu and taskbar after installing OpenWin](docs/start-menu.png) | ![Brave's New Tab page after installing OpenWin](docs/brave.jpg) |
+| ![The Start menu and taskbar after installing OpenWin's Brave edition](docs/start-menu.png) | ![Brave's New Tab page after installing OpenWin](docs/brave.jpg) |
 
 **Open-source apps by default**
 - **Brave** is the default browser and PDF viewer in the Brave edition, pinned
@@ -67,9 +67,9 @@ editions (see [Always up to date](#always-up-to-date)).
   Collection, Sound Recorder, Sticky Notes, Teams, To Do, Weather, Widgets and
   Xbox.
 - OneDrive is removed.
-- The Start menu only has the edition's browser (Brave, Chrome or Edge),
+- The Start menu pins only the edition's browser (Brave, Chrome or Edge),
   Microsoft Store, Settings, Photos, Paint, Calculator, Notepad, Snipping Tool
-  and File Explorer. The taskbar has File Explorer and the browser.
+  and File Explorer, and the taskbar pins only File Explorer and the browser.
 - No web suggestions in Search.
 
 **Sensible defaults**
@@ -152,8 +152,8 @@ against the checksums Brave signs, Chrome's against Google's digital signature
 lists for it.
 
 Brave's and Chrome's offline installers are larger than GitHub's 100 MB file
-limit, so this repository keeps only their versions and checksums, in
-`Brave.json` and `Chrome.json`. The downloads above include the installers
+limit, so this repository keeps only their versions, download links and
+checksums, in `Brave.json` and `Chrome.json`. The downloads above include the installers
 themselves. Edge comes with Windows and updates itself.
 
 Changes are tested on the [dev](https://github.com/cris2k47/OpenWin/tree/dev)
@@ -172,7 +172,7 @@ Brave/                    The Brave edition
   $OEM$/$$/Setup/Scripts/ RemoveEdge.cmd, which uninstalls Edge
   $OEM$/$$/System32/      Default apps
   $OEM$/$1/Users/Default/ Brave settings, Start menu and taskbar layout
-Chrome/                   The Chrome edition, laid out like Brave's
+Chrome/                   The Chrome edition, laid out like Brave's, without browser settings
 Edge/                     The Edge edition: its answer file, default apps, Edge settings,
                           Start menu and taskbar layout
 .github/                  The workflow that keeps everything up to date
