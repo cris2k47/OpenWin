@@ -25,14 +25,15 @@ editions (see [Always up to date](#always-up-to-date)).
 
 ## What you get
 
-| The Start menu and taskbar | Brave's New Tab page |
+| The Start menu and taskbar in the Brave edition | Brave's New Tab page |
 | --- | --- |
 | ![The Start menu and taskbar after installing OpenWin](docs/start-menu.png) | ![Brave's New Tab page after installing OpenWin](docs/brave.jpg) |
 
 **Open-source apps by default**
-- **Brave** is the default browser and PDF viewer, pinned to the taskbar, and
-  follows the Windows display language. Each user starts with these settings,
-  which they can change later in Brave's settings:
+- **Brave** is the default browser and PDF viewer in the Brave edition, pinned
+  to the Start menu and taskbar, and follows the Windows display language. It
+  skips its welcome page the first time it opens, and each user starts with
+  these settings, which they can change later in Brave's settings:
   - No Brave VPN, Leo AI, Wallet or Rewards buttons, and no Leo AI, Brave Talk
     or Wallet in the sidebar.
   - No Leo suggestions in the address bar or Leo items in the right-click menu,
@@ -40,8 +41,7 @@ editions (see [Always up to date](#always-up-to-date)).
   - A New Tab page with a clock, without sponsored images, Brave News or the
     Rewards, Talk and VPN widgets.
   - Downloads go straight to the Downloads folder without asking where.
-  - No welcome page the first time Brave opens, and Brave's anonymous usage
-    statistics (P3A) are off.
+  - Brave's anonymous usage statistics (P3A) are off.
 - **7-Zip** opens archives and disk images: zip, 7z, rar, tar, gz, xz, zst,
   iso, cab, wim, vhd(x), dmg and more.
 
@@ -52,23 +52,24 @@ editions (see [Always up to date](#always-up-to-date)).
 
 **In the Edge edition**
 - **Microsoft Edge** stays installed instead of Brave, as Windows ships it,
-  pinned to the Start menu and taskbar. Each user starts with these settings,
-  which they can change later in Edge's settings:
-  - No welcome screens the first time Edge opens, and no prompt to use Edge's
-    recommended browser settings.
-  - No Copilot button on the toolbar, and the Downloads button is always shown.
+  pinned to the Start menu and taskbar. It skips its welcome screens the first
+  time it opens and doesn't prompt you to use its recommended browser settings.
+  Each user starts with these settings, which they can change later in Edge's
+  settings:
+  - No Copilot button on the toolbar.
+  - The Downloads button is always shown.
 
 **No bloat**
 - Microsoft Edge is uninstalled, except in the Edge edition.
 - These preinstalled apps are removed: Clipchamp, Clock, Camera, Copilot,
-  Dev Home, Family, Feedback Hub, Get Help, Microsoft 365 Copilot, News,
-  Outlook (new), Phone Link, Power Automate, Quick Assist, Solitaire
+  Dev Home, Family, Feedback Hub, Get Help, Microsoft 365 Copilot, Microsoft
+  Bing, News, Outlook (new), Phone Link, Power Automate, Quick Assist, Solitaire
   Collection, Sound Recorder, Sticky Notes, Teams, To Do, Weather, Widgets and
   Xbox.
 - OneDrive is removed.
-- The Start menu only has Brave, Microsoft Store, Settings, Photos, Paint,
-  Calculator, Notepad, Snipping Tool and File Explorer. The taskbar has File
-  Explorer and Brave.
+- The Start menu only has the edition's browser (Brave, Chrome or Edge),
+  Microsoft Store, Settings, Photos, Paint, Calculator, Notepad, Snipping Tool
+  and File Explorer. The taskbar has File Explorer and the browser.
 - No web suggestions in Search.
 
 **Sensible defaults**
