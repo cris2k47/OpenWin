@@ -5,8 +5,9 @@ Opera's offline installer is larger than GitHub's 100 MiB file limit, so the
 repository keeps only its version, URL and SHA-256 in Opera.json, and the
 release job downloads it when it builds the Opera edition.
 
-By default, this looks for the newest version in Opera's download archive,
-which only has stable releases, downloads its offline installer, checks it
+By default, this looks for the newest version with a Windows installer in
+Opera's download archive, which only has stable releases, downloads that
+installer, checks it
 against the SHA-256 Opera publishes next to it and that it's signed by Opera
 Norway AS, and updates Opera.json. With --check, it only reports whether
 there's a version to pin. With --download, it downloads the pinned installer
@@ -77,11 +78,17 @@ def installer_url(version):
 
 def latest_version():
     listing = fetch(ARCHIVE_URL).decode()
-    versions = re.findall(r'href="(\d+\.\d+\.\d+\.\d+)/"', listing)
+    versions = set(re.findall(r'href="(\d+\.\d+\.\d+\.\d+)/"', listing))
     if not versions:
         raise RuntimeError(f"No Opera versions found in {ARCHIVE_URL}")
-    # The listing is sorted as text, and also gets fixes for older versions.
-    return max(versions, key=parse_version)
+    # The listing is sorted as text, and also gets fixes for older versions. Some
+    # versions are only for macOS (such as 122.0.5643.150), and a withdrawn
+    # installer can leave its version's folder behind, so take the newest
+    # version that has a Windows installer.
+    for version in sorted(versions, key=parse_version, reverse=True)[:10]:
+        if exists(installer_url(version)):
+            return version
+    raise RuntimeError(f"None of the 10 newest versions in {ARCHIVE_URL} has a Windows installer")
 
 
 def download(url, dest):
@@ -171,13 +178,13 @@ def main():
 
     old_version = pin["version"] if pin else None
     version = latest_version()
-    if old_version and parse_version(version) <= parse_version(old_version):
-        # Opera has withdrawn a release before. Never go back to an older
-        # version, unless the pinned one can't be downloaded anymore.
-        if version == old_version or exists(pin["url"]):
-            print(f"Opera {old_version} is up to date (latest release: {version}).")
-            write_outputs(changed="false")
-            return
+    if version == old_version:
+        print(f"Opera {old_version} is up to date.")
+        write_outputs(changed="false")
+        return
+    if old_version and parse_version(version) < parse_version(old_version):
+        # Opera has withdrawn a release before. The pinned version is newer than
+        # any Windows installer left, so it's gone and can't be built anymore.
         print(f"Opera {old_version} was withdrawn, so going back to {version}.")
     if args.check:
         print(f"Opera {version} can be pinned (pinned: {old_version}).")
