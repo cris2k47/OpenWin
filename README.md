@@ -8,8 +8,8 @@ It's an answer file for Windows Setup (`autounattend.xml`) plus an `$OEM$`
 folder with everything it installs. You add them to the official Windows 11
 installer from Microsoft, either on a USB drive or in a virtual machine.
 
-It comes in three editions: with Brave, with Google Chrome, or with Microsoft
-Edge. The Brave and Chrome editions uninstall Edge.
+It comes in four editions: with Brave, with Google Chrome, with Microsoft Edge,
+or with Opera. The Brave, Chrome and Opera editions uninstall Edge.
 
 ## Downloads
 
@@ -18,10 +18,11 @@ Edge. The Brave and Chrome editions uninstall Edge.
 | Brave | [**OpenWin-Brave.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Brave.zip) | [**autounattend-Brave.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Brave.iso) |
 | Chrome | [**OpenWin-Chrome.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip) | [**autounattend-Chrome.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso) |
 | Edge | [**OpenWin-Edge.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Edge.zip) | [**autounattend-Edge.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Edge.iso) |
+| Opera | [**OpenWin-Opera.zip**](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Opera.zip) | [**autounattend-Opera.iso**](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Opera.iso) |
 
 Each contains the same two things, `autounattend.xml` and the `$OEM$` folder,
-and always ships the latest 7-Zip, plus the latest Brave or Chrome in those
-editions (see [Always up to date](#always-up-to-date)).
+and always ships the latest 7-Zip, plus the latest Brave, Chrome or Opera in
+those editions (see [Always up to date](#always-up-to-date)).
 
 ## What you get
 
@@ -59,6 +60,10 @@ editions (see [Always up to date](#always-up-to-date)).
   - No Copilot button on the toolbar.
   - The Downloads button is always shown.
 
+**In the Opera edition**
+- **Opera** replaces Brave as the default browser and PDF viewer, in the Start
+  menu and on the taskbar. Opera itself keeps all its default settings.
+
 **No bloat**
 - Microsoft Edge is uninstalled, except in the Edge edition.
 - These preinstalled apps are removed: Clipchamp, Clock, Camera, Copilot,
@@ -67,7 +72,7 @@ editions (see [Always up to date](#always-up-to-date)).
   Collection, Sound Recorder, Sticky Notes, Teams, To Do, Weather, Widgets and
   Xbox.
 - OneDrive is removed.
-- The Start menu pins only the edition's browser (Brave, Chrome or Edge),
+- The Start menu pins only the edition's browser (Brave, Chrome, Edge or Opera),
   Microsoft Store, Settings, Photos, Paint, Calculator, Notepad, Snipping Tool
   and File Explorer, and the taskbar pins only File Explorer and the browser.
 - No web suggestions in Search.
@@ -86,8 +91,9 @@ editions (see [Always up to date](#always-up-to-date)).
 
 1. Make a Windows 11 USB drive with the [Media Creation Tool](https://www.microsoft.com/software-download/windows11).
 2. Download [OpenWin-Brave.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Brave.zip),
-   [OpenWin-Chrome.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip) or
-   [OpenWin-Edge.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Edge.zip) and extract it.
+   [OpenWin-Chrome.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Chrome.zip),
+   [OpenWin-Edge.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Edge.zip) or
+   [OpenWin-Opera.zip](https://github.com/cris2k47/OpenWin/releases/latest/download/OpenWin-Opera.zip) and extract it.
 3. Copy `autounattend.xml` and the `$OEM$` folder to the root of the USB drive,
    next to `setup.exe`.
 4. Boot the PC from the USB drive.
@@ -96,12 +102,13 @@ editions (see [Always up to date](#always-up-to-date)).
 
 1. Download the Windows 11 ISO from [Microsoft](https://www.microsoft.com/software-download/windows11)
    and [autounattend-Brave.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Brave.iso),
-   [autounattend-Chrome.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso) or
-   [autounattend-Edge.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Edge.iso).
+   [autounattend-Chrome.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Chrome.iso),
+   [autounattend-Edge.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Edge.iso) or
+   [autounattend-Opera.iso](https://github.com/cris2k47/OpenWin/releases/latest/download/autounattend-Opera.iso).
 2. Create the virtual machine with at least 2 CPUs and the Windows 11 ISO as its
    boot CD/DVD drive. Windows 11 Setup refuses machines with a single CPU.
-3. Add a second CD/DVD drive with `autounattend-Brave.iso`, `autounattend-Chrome.iso`
-   or `autounattend-Edge.iso`.
+3. Add a second CD/DVD drive with `autounattend-Brave.iso`, `autounattend-Chrome.iso`,
+   `autounattend-Edge.iso` or `autounattend-Opera.iso`.
 4. Start the virtual machine and press a key when it says *Press any key to boot
    from CD or DVD*. Windows Setup finds `autounattend.xml` on the second drive
    by itself.
@@ -144,17 +151,18 @@ earlier Windows 10 or 11. Otherwise, enter a product key in
 ## Always up to date
 
 Every 5 minutes, a [GitHub Actions workflow](.github/workflows/update-installers.yml)
-checks for new releases of Brave, Google Chrome and 7-Zip. When one is out, it
-verifies the official installer, commits the update to this repository and
-publishes a new release with the downloads above. It checks Brave's installer
-against the checksums Brave signs, Chrome's against Google's digital signature
-(Google doesn't publish checksums), and 7-Zip's against the checksum GitHub
+checks for new releases of Brave, Google Chrome, Opera and 7-Zip. When one is
+out, it verifies the official installer, commits the update to this repository
+and publishes a new release with the downloads above. It checks Brave's
+installer against the checksums Brave signs, Chrome's against Google's digital
+signature (Google doesn't publish checksums), Opera's against the checksum Opera
+publishes and Opera's digital signature, and 7-Zip's against the checksum GitHub
 lists for it.
 
-Brave's and Chrome's offline installers are larger than GitHub's 100 MB file
-limit, so this repository keeps only their versions, download links and
-checksums, in `Brave.json` and `Chrome.json`. The downloads above include the installers
-themselves. Edge comes with Windows and updates itself.
+Brave's, Chrome's and Opera's offline installers are larger than GitHub's 100 MB
+file limit, so this repository keeps only their versions, download links and
+checksums, in `Brave.json`, `Chrome.json` and `Opera.json`. The downloads above
+include the installers themselves. Edge comes with Windows and updates itself.
 
 Changes are tested on the [dev](https://github.com/cris2k47/OpenWin/tree/dev)
 branch first. Each push there builds every edition and attaches them to its
@@ -175,6 +183,8 @@ Brave/                    The Brave edition
 Chrome/                   The Chrome edition, laid out like Brave's, without browser settings
 Edge/                     The Edge edition: its answer file, default apps, Edge settings,
                           Start menu and taskbar layout
+Opera/                    The Opera edition, laid out like Chrome's, plus PinOpera.cmd,
+                          which pins Opera's shortcut by its name in the Windows language
 .github/                  The workflow that keeps everything up to date
 docs/                     Screenshots and the banner for this README
 ```
@@ -185,14 +195,15 @@ Windows Setup copies `$OEM$\$$` to `C:\Windows` and `$OEM$\$1` to `C:\`.
 
 ## License
 
-OpenWin is under the [MIT License](LICENSE). Brave, Chrome and 7-Zip, which
-it installs, keep their own licenses.
+OpenWin is under the [MIT License](LICENSE). Brave, Chrome, Opera and 7-Zip,
+which it installs, keep their own licenses.
 
 ## Credits
 
 - [Brave](https://brave.com/) by Brave Software, under the Mozilla Public License 2.0.
 - [Google Chrome](https://www.google.com/chrome/) by Google, under the [Google Chrome Terms of Service](https://www.google.com/chrome/terms/).
+- [Opera](https://www.opera.com/) by Opera Norway AS, under the [Opera End User License Agreement](https://www.opera.com/legal/eula-computers).
 - [7-Zip](https://www.7-zip.org/) by Igor Pavlov, under the GNU LGPL with the unRAR restriction.
 
 Windows is a trademark of Microsoft. OpenWin isn't affiliated with Microsoft,
-Brave Software, Google or 7-Zip.
+Brave Software, Google, Opera or 7-Zip.
