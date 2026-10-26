@@ -23,7 +23,7 @@ RELEASES_URL = "https://api.github.com/repos/ip7z/7zip/releases"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FILES_DIR = Path("$OEM$", "$$", "Setup", "Files")
-UNATTENDS = [Path(edition, "autounattend.xml") for edition in ("Brave", "Chrome", "Edge")]
+UNATTENDS = [Path(edition, "autounattend.xml") for edition in ("Brave", "Chrome", "Edge", "Vivaldi")]
 
 TAG_PATTERN = re.compile(r"(\d+)\.(\d\d)")
 # 7-Zip 26.04 is 7z2604-x64.exe.

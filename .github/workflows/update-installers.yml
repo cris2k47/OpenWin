@@ -88,10 +88,49 @@ jobs:
           git commit -m "$MESSAGE"
           git push
 
-  seven-zip:
+  vivaldi:
     # Run after the Chrome job, even if it failed, so the two never push at the
     # same time.
     needs: chrome
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Check out the branch tip so updates pushed by the previous jobs are
+          # included.
+          ref: ${{ github.ref }}
+
+      - name: Check whether Vivaldi published a new version
+        id: check
+        run: python3 .github/scripts/update_vivaldi.py --check
+
+      - name: Install osslsigncode
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq osslsigncode
+
+      - name: Pin the latest Vivaldi release
+        id: vivaldi
+        if: steps.check.outputs.changed == 'true'
+        run: python3 .github/scripts/update_vivaldi.py
+
+      - name: Commit and push
+        if: steps.vivaldi.outputs.commit
+        env:
+          MESSAGE: ${{ steps.vivaldi.outputs.commit }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "$MESSAGE"
+          git push
+
+  seven-zip:
+    # Run after the Vivaldi job, even if it failed, so the two never push at the
+    # same time.
+    needs: vivaldi
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
@@ -124,7 +163,7 @@ jobs:
     # through an update above or any other push. On other branches, such as dev,
     # build every edition on every run and attach them to the run to test,
     # without publishing a release.
-    needs: [brave, chrome, seven-zip]
+    needs: [brave, chrome, vivaldi, seven-zip]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     env:
@@ -145,7 +184,7 @@ jobs:
           # The Git object IDs of these change exactly when their contents do.
           contents() {
             gh api "repos/$GH_REPO/git/trees/$1" --jq '[.tree[]
-              | select(.path == "$OEM$" or .path == "Brave" or .path == "Chrome" or .path == "Edge")
+              | select(.path == "$OEM$" or .path == "Brave" or .path == "Chrome" or .path == "Edge" or .path == "Vivaldi")
               | .sha] | join(" ")'
           }
           # Only a 404 means there's no release yet. Any other error stops here,
@@ -210,6 +249,7 @@ jobs:
           build Brave
           build Chrome
           build Edge
+          build Vivaldi
 
       # On branches other than main, attach the files to the run, each as it is
       # rather than zipped, to download and test from the run's page.
@@ -261,6 +301,22 @@ jobs:
           archive: false
           retention-days: 30
 
+      - name: Attach autounattend-Vivaldi.iso to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/autounattend-Vivaldi.iso
+          archive: false
+          retention-days: 30
+
+      - name: Attach OpenWin-Vivaldi.zip to the run
+        if: steps.check.outputs.build == 'true' && github.ref_name != 'main'
+        uses: actions/upload-artifact@v7
+        with:
+          path: dist/OpenWin-Vivaldi.zip
+          archive: false
+          retention-days: 30
+
       - name: Publish a new release
         if: steps.check.outputs.build == 'true' && github.ref_name == 'main'
         env:
@@ -270,6 +326,7 @@ jobs:
         run: |
           brave=$(jq -r .version 'Brave/$OEM$/$$/Setup/Files/Brave.json')
           chrome=$(jq -r .version 'Chrome/$OEM$/$$/Setup/Files/Chrome.json')
+          vivaldi=$(jq -r .version 'Vivaldi/$OEM$/$$/Setup/Files/Vivaldi.json')
           sevenzip=$(ls '$OEM$/$$/Setup/Files' | sed -n 's/^7z\([0-9]*\)\([0-9][0-9]\)-x64\.exe$/\1.\2/p')
           tag=$(date -u +%Y.%m.%d-%H%M)
           # The first line of every commit since the previous release.
@@ -284,14 +341,14 @@ jobs:
               printf '[All changes since %s](https://github.com/%s/compare/%s...%s)\n\n' \
                 "$PREVIOUS_TAG" "$GH_REPO" "$PREVIOUS_TAG" "$tag"
             fi
-            sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@CHROME@|$chrome|" \
+            sed -e "s|@SHA@|$SHA|" -e "s|@BRAVE@|$brave|" -e "s|@CHROME@|$chrome|" -e "s|@VIVALDI@|$vivaldi|" \
               -e "s|@SEVENZIP@|$sevenzip|" -e "s|@REPO@|$GH_REPO|" <<'EOF'
           ## Downloads
 
-          Built from @SHA@ with Brave @BRAVE@, Chrome @CHROME@ and 7-Zip @SEVENZIP@.
+          Built from @SHA@ with Brave @BRAVE@, Chrome @CHROME@, Vivaldi @VIVALDI@ and 7-Zip @SEVENZIP@.
 
-          - **autounattend-Brave.iso**, **autounattend-Chrome.iso** or **autounattend-Edge.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
-          - **OpenWin-Brave.zip**, **OpenWin-Chrome.zip** or **OpenWin-Edge.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.
+          - **autounattend-Brave.iso**, **autounattend-Chrome.iso**, **autounattend-Edge.iso** or **autounattend-Vivaldi.iso**: attach it to a virtual machine as a second CD/DVD drive, next to the Windows 11 ISO.
+          - **OpenWin-Brave.zip**, **OpenWin-Chrome.zip**, **OpenWin-Edge.zip** or **OpenWin-Vivaldi.zip**: extract it and copy `autounattend.xml` and the `$OEM$` folder to the root of a USB drive made with the Media Creation Tool.
 
           See the [README](https://github.com/@REPO@#readme) for step-by-step instructions.
           EOF
@@ -299,4 +356,4 @@ jobs:
           # gh uploads the files to a draft and publishes it only once they're all
           # there, so the download links never point at a release without them.
           gh release create "$tag" dist/* --latest --target "$SHA" \
-            --title "OpenWin ${tag%-*} · Brave $brave · Chrome $chrome · 7-Zip $sevenzip" --notes-file notes.md
+            --title "OpenWin ${tag%-*} · Brave $brave · Chrome $chrome · Vivaldi $vivaldi · 7-Zip $sevenzip" --notes-file notes.md
