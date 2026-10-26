@@ -7,10 +7,11 @@ release job downloads it when it builds the Vivaldi edition.
 
 Vivaldi publishes no checksums. By default, this looks up the newest stable
 Vivaldi in the update feed Vivaldi's own updater reads, downloads its offline
-installer, checks that it's signed by Vivaldi Technologies AS, and updates
-Vivaldi.json. With --check, it only reports whether there's a newer version.
-With --download, it downloads the pinned installer instead and checks that it's
-still the same file.
+installer, checks that it's signed by Vivaldi Technologies AS, updates
+Vivaldi.json and points the Vivaldi edition's autounattend.xml at the
+installer, which keeps its own name. With --check, it only reports whether
+there's a newer version. With --download, it downloads the pinned installer
+instead and checks that it's still the same file.
 
 Verifying the installer needs osslsigncode.
 """
@@ -26,6 +27,7 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -33,13 +35,15 @@ from pathlib import Path
 # The stable channel's feed. The one under /win/ is for snapshots.
 APPCAST_URL = "https://update.vivaldi.com/update/1.0/public/appcast.x64.xml"
 SPARKLE = "{http://www.andymatuschak.org/xml-namespaces/sparkle}"
-# Offline, and installs for all users with --system-level.
-SETUP_NAME = "Vivaldi.x64.exe"
+# Offline, and installs for all users with --system-level. Vivaldi 8.2.4133.94
+# is Vivaldi.8.2.4133.94.x64.exe.
+SETUP_PATTERN = re.compile(r"Vivaldi\.\d+\.\d+\.\d+\.\d+\.x64\.exe")
 # The organization and common name of the certificate Vivaldi signs Vivaldi with.
 SIGNER = "Vivaldi Technologies AS"
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PIN = Path("Vivaldi", "$OEM$", "$$", "Setup", "Files", "Vivaldi.json")
+UNATTEND = Path("Vivaldi", "autounattend.xml")
 
 VERSION_PATTERN = re.compile(r"\d+\.\d+\.\d+\.\d+")
 
@@ -76,6 +80,13 @@ def latest_release():
     if not re.fullmatch(rf"https://downloads\.vivaldi\.com/stable[\w-]*/Vivaldi\.{re.escape(version)}\.x64\.exe", url):
         raise RuntimeError(f"Unexpected installer URL for Vivaldi {version}: {url!r}")
     return version, url
+
+
+def setup_name(url):
+    name = Path(urllib.parse.urlparse(url).path).name
+    if not SETUP_PATTERN.fullmatch(name):
+        raise RuntimeError(f"Unexpected installer name in {url}")
+    return name
 
 
 def download(url, dest):
@@ -150,7 +161,7 @@ def main():
         if not pin:
             raise RuntimeError(f"{pin_path} not found")
         print(f"Downloading Vivaldi {pin['version']} from {pin['url']}")
-        sha256 = download(pin["url"], args.download / SETUP_NAME)
+        sha256 = download(pin["url"], args.download / setup_name(pin["url"]))
         if sha256 != pin["sha256"]:
             raise RuntimeError(f"{pin['url']} isn't the pinned Vivaldi {pin['version']} anymore.")
         return
@@ -166,8 +177,14 @@ def main():
         write_outputs(changed="true")
         return
 
+    unattend = args.root / UNATTEND
+    with open(unattend, newline="") as f:
+        xml, count = SETUP_PATTERN.subn(setup_name(url), f.read())
+    if count != 1:
+        raise RuntimeError(f"No Vivaldi installer referenced in {unattend}")
+
     with tempfile.TemporaryDirectory() as staging:
-        setup = Path(staging) / SETUP_NAME
+        setup = Path(staging) / setup_name(url)
         sha256 = download(url, setup)
         verify_signature(setup)
 
@@ -175,6 +192,8 @@ def main():
     pin = {"version": version, "url": url, "sha256": sha256}
     pin_path.parent.mkdir(parents=True, exist_ok=True)
     pin_path.write_text(json.dumps(pin, indent=2) + "\n")
+    with open(unattend, "w", newline="") as f:
+        f.write(xml)
     write_outputs(commit=f"Update Vivaldi to {version}")
 
 

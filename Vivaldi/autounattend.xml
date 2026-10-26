@@ -32,7 +32,7 @@
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>5</Order>
-                    <Path>"%SYSTEMROOT%\Setup\Files\Vivaldi.x64.exe" --vivaldi-silent --do-not-launch-chrome --system-level</Path>
+                    <Path>"%SYSTEMROOT%\Setup\Files\Vivaldi.8.2.4133.94.x64.exe" --vivaldi-silent --do-not-launch-chrome --system-level</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>6</Order>
