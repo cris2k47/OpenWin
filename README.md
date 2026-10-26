@@ -154,9 +154,9 @@ Every 5 minutes, a [GitHub Actions workflow](.github/workflows/update-installers
 checks for new releases of Brave, Google Chrome, Vivaldi and 7-Zip. When one is
 out, it verifies the official installer, commits the update to this repository
 and publishes a new release with the downloads above. It checks Brave's
-installer against the checksums Brave signs, Chrome's and Vivaldi's against
-Google's and Vivaldi's digital signatures (neither publishes checksums), and
-7-Zip's against the checksum GitHub lists for it.
+installer against the checksums Brave signs, Chrome's against Google's digital
+signature (Google doesn't publish checksums), Vivaldi's against Vivaldi's
+digital signature, and 7-Zip's against the checksum GitHub lists for it.
 
 Brave's, Chrome's and Vivaldi's offline installers are larger than GitHub's
 100 MB file limit, so this repository keeps only their versions, download links

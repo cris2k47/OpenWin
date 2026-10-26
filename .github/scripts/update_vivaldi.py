@@ -5,13 +5,12 @@ Vivaldi's offline installer is larger than GitHub's 100 MiB file limit, so the
 repository keeps only its version, URL and SHA-256 in Vivaldi.json, and the
 release job downloads it when it builds the Vivaldi edition.
 
-Vivaldi publishes no checksums. By default, this looks up the newest stable
-Vivaldi in the update feed Vivaldi's own updater reads, downloads its offline
-installer, checks that it's signed by Vivaldi Technologies AS, updates
-Vivaldi.json and points the Vivaldi edition's autounattend.xml at the
-installer, which keeps its own name. With --check, it only reports whether
-there's a newer version. With --download, it downloads the pinned installer
-instead and checks that it's still the same file.
+By default, this looks up the newest stable Vivaldi in the update feed
+Vivaldi's own updater reads, downloads its offline installer, checks that it's
+signed by Vivaldi Technologies AS, updates Vivaldi.json and points the Vivaldi
+edition's autounattend.xml at the installer, which keeps its own name. With --check, it only reports whether there's a newer version. With
+--download, it downloads the pinned installer instead and checks that it's
+still the same file.
 
 Verifying the installer needs osslsigncode.
 """
@@ -77,9 +76,12 @@ def latest_release():
         raise RuntimeError(f"No installer found in {APPCAST_URL}")
     version, url = enclosure.get(f"{SPARKLE}version", ""), enclosure.get("url", "")
     parse_version(version)
-    if not re.fullmatch(rf"https://downloads\.vivaldi\.com/stable[\w-]*/Vivaldi\.{re.escape(version)}\.x64\.exe", url):
+    # Stable releases are under /stable-auto/, the folder the updater downloads from.
+    name = f"Vivaldi.{version}.x64.exe"
+    if url != f"https://downloads.vivaldi.com/stable-auto/{name}":
         raise RuntimeError(f"Unexpected installer URL for Vivaldi {version}: {url!r}")
-    return version, url
+    # The same file, where vivaldi.com and its download archive link to it.
+    return version, f"https://downloads.vivaldi.com/stable/{name}"
 
 
 def setup_name(url):
