@@ -62,7 +62,8 @@ those editions (see [Always up to date](#always-up-to-date)).
 
 **In the Vivaldi edition**
 - **Vivaldi** replaces Brave as the default browser and PDF viewer, in the Start
-  menu and on the taskbar. Vivaldi itself keeps all its default settings.
+  menu and on the taskbar. It skips its welcome wizard the first time it opens.
+  Otherwise Vivaldi keeps all its default settings.
 
 **No bloat**
 - Microsoft Edge is uninstalled, except in the Edge edition.
@@ -182,7 +183,7 @@ Brave/                    The Brave edition
 Chrome/                   The Chrome edition, laid out like Brave's, without browser settings
 Edge/                     The Edge edition: its answer file, default apps, Edge settings,
                           Start menu and taskbar layout
-Vivaldi/                  The Vivaldi edition, laid out like Chrome's
+Vivaldi/                  The Vivaldi edition, laid out like Brave's
 .github/                  The workflow that keeps everything up to date
 docs/                     Screenshots and the banner for this README
 ```
