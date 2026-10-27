@@ -1,23 +1,14 @@
 {
    "vivaldi": {
+      "policy": {
+         "vpn_enabled": false
+      },
       "startup": {
          "has_seen_feature": 1,
          "has_seen_welcome_page": true
       },
-      "toolbars": {
-         "navigation": [
-            "PanelToggle",
-            "PanelWidthSpacer",
-            "Back",
-            "Forward",
-            "Reload",
-            "AddressField",
-            "Spacer",
-            "Extensions",
-            "UpdateButton",
-            "AccountButton"
-         ],
-         "tabbar_before": []
+      "workspaces": {
+         "enabled": false
       }
    }
 }
