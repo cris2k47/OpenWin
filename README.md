@@ -62,8 +62,10 @@ those editions (see [Always up to date](#always-up-to-date)).
 
 **In the Vivaldi edition**
 - **Vivaldi** replaces Brave as the default browser and PDF viewer, in the Start
-  menu and on the taskbar. It skips its welcome wizard the first time it opens.
-  Otherwise Vivaldi keeps all its default settings.
+  menu and on the taskbar. It skips its welcome wizard the first time it opens,
+  and each user starts without the VPN and Workspaces buttons, which they can
+  add back by editing the toolbars. Otherwise Vivaldi keeps all its default
+  settings.
 
 **No bloat**
 - Microsoft Edge is uninstalled, except in the Edge edition.
