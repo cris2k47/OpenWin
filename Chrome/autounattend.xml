@@ -20,7 +20,7 @@
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>2</Order>
-                    <Path>conhost --headless "%SYSTEMROOT%\Setup\Scripts\RemoveEdge.cmd"</Path>
+                    <Path>conhost --headless "%SYSTEMROOT%\Setup\Scripts\RemoveEdgeDism.cmd"</Path>
                 </RunSynchronousCommand>
                 <RunSynchronousCommand wcm:action="add">
                     <Order>3</Order>
